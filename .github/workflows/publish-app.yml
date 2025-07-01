@@ -1,0 +1,337 @@
+name: Publish Application
+
+on:
+  workflow_call:
+    inputs:
+      # .NET Build Inputs
+      dotnet_folder:
+        description: 'Path to the .NET project folder'
+        required: false
+        type: string
+      global_json_folder:
+        description: 'Path to the folder containing global.json'
+        required: false
+        type: string
+        default: '.'
+      nuget_accounts:
+        description: 'Comma-separated list of GitHub accounts to add as NuGet sources.'
+        required: false
+        type: string
+        default: 'default'
+      dotnet_configuration:
+        description: '.NET configuration'
+        required: false
+        type: string
+        default: 'Release'
+
+      # SPA Build Inputs
+      spa_folder:
+        description: 'Path to the SPA project folder'
+        required: false
+        type: string
+      spa_version_env:
+        description: 'Environment variable name to store SPA version'
+        required: false
+        type: string
+        default: 'VITE_VERSION' # or 'REACT_APP_VERSION'
+      npm_build_script:
+        description: 'NPM build script'
+        required: false
+        type: string
+        default: 'build'
+      npm_dist_folder:
+        description: 'Path to the SPA distribution folder'
+        required: false
+        type: string
+        default: 'dist'
+      persisted_documents_file:
+        description: 'Path to the persisted documents file, to be copied to the .NET build folder'
+        required: false
+        type: string
+      npm_analyze_script:
+        description: 'NPM analyze script to run after build'
+        required: false
+        type: string
+      analysis_artifacts:
+        description: 'Full path to files to upload as analysis artifacts (glob pattern)'
+        required: false
+        type: string
+      
+      # Deployment Inputs
+      spa_deployment_method:
+        description: 'Method to deploy SPA: "azure-webapp" or "azure-storage"'
+        required: false
+        type: string
+      environment_name:
+        description: 'Environment name for deployment'
+        required: true
+        type: string
+
+    secrets:
+      # NuGet Secrets
+      NUGET_ORG_USER:
+        required: false
+      NUGET_ORG_TOKEN:
+        required: false
+      
+      # Azure Credentials
+      AZURE_CLIENT_ID:
+        description: 'Client ID for Azure deployment'
+        required: false
+      AZURE_TENANT_ID:
+        description: 'Tenant ID for Azure deployment'
+        required: false
+      AZURE_SUBSCRIPTION_ID:
+        description: 'Subscription ID for Azure deployment'
+        required: false
+
+      # Azure Resources
+      AZURE_STORAGE_ACCOUNT:
+        description: 'Azure Storage account name for deployment'
+        required: false
+      AZURE_STORAGE_CONTAINER:
+        description: 'Azure Storage container name for deployment'
+        required: false
+      AZURE_WEBAPP_NAME:
+        description: 'Azure Web App name for deployment'
+        required: false
+      AZURE_WEBAPP_SLOT_NAME:
+        description: 'Azure Web App slot name for deployment'
+        required: false
+
+jobs:
+  check_azure_tokens:
+    name: Check Azure Tokens
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment_name }}
+    outputs:
+      has_tokens: ${{ steps.check_tokens.outputs.has_tokens }}
+      has_webapp_name: ${{ steps.check_webapp_name.outputs.has_webapp_name }}
+      has_storage_tokens: ${{ steps.check_storage_tokens.outputs.has_storage_tokens }}
+    steps:
+      - name: Check Azure tokens are defined 
+        id: check_tokens
+        shell: bash
+        run: |
+          if [ -z "${{ secrets.AZURE_CLIENT_ID }}" ] || [ -z "${{ secrets.AZURE_TENANT_ID }}" ] || [ -z "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
+            echo "has_tokens=false" >> $GITHUB_OUTPUT
+            echo "One or more Azure tokens are missing."
+          else
+            echo "has_tokens=true" >> $GITHUB_OUTPUT
+          fi
+      - name: Check if Azure Web App name is defined
+        id: check_webapp_name
+        shell: bash
+        if: inputs.dotnet_folder
+        run: |
+          if [ -z "${{ secrets.AZURE_WEBAPP_NAME }}" ]; then
+            echo "has_webapp_name=false" >> $GITHUB_OUTPUT
+            echo "Azure Web App name is missing."
+          else
+            echo "has_webapp_name=true" >> $GITHUB_OUTPUT
+          fi
+      - name: Check if Azure Storage tokens are defined
+        id: check_storage_tokens
+        shell: bash
+        if: inputs.spa_folder && inputs.spa_deployment_method == 'azure-storage'
+        run: |
+          if [ -z "${{ secrets.AZURE_STORAGE_ACCOUNT }}" ] || [ -z "${{ secrets.AZURE_STORAGE_CONTAINER }}" ]; then
+            echo "has_storage_tokens=false" >> $GITHUB_OUTPUT
+            echo "One or more Azure Storage tokens are missing."
+          else
+            echo "has_storage_tokens=true" >> $GITHUB_OUTPUT
+          fi
+
+  build_dotnet:
+    name: Build .NET Backend
+    needs: check_azure_tokens
+    if: inputs.dotnet_folder && needs.check_azure_tokens.outputs.has_tokens == 'true'
+    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@1.0.0
+    with:
+      dotnet_folder: ${{ inputs.dotnet_folder }}
+      global_json_folder: ${{ inputs.global_json_folder }}
+      nuget_accounts: ${{ inputs.nuget_accounts }}
+      dotnet_configuration: ${{ inputs.dotnet_configuration }}
+      environment_name: ${{ inputs.environment_name }}
+    secrets: inherit
+
+  build_spa:
+    name: Build SPA
+    needs: check_azure_tokens
+    if: inputs.spa_folder && needs.check_azure_tokens.outputs.has_tokens == 'true'
+    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@1.0.0
+    with:
+      spa_folder: ${{ inputs.spa_folder }}
+      spa_version_env: ${{ inputs.spa_version_env }}
+      npm_build_script: ${{ inputs.npm_build_script }}
+      npm_dist_folder: ${{ inputs.npm_dist_folder }}
+      persisted_documents_file: ${{ inputs.persisted_documents_file }}
+      environment_name: ${{ inputs.environment_name }}
+      npm_analyze_script: ${{ inputs.npm_analyze_script }}
+      analysis_files: ${{ inputs.analysis_artifacts }}
+
+  deploy_webapp_netonly:
+    name: Deploy to Azure Web App
+    needs: [build_dotnet, check_azure_tokens]
+    if: inputs.dotnet_folder && needs.check_azure_tokens.outputs.has_webapp_name && !inputs.spa_folder
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@1.0.0
+    with:
+      environment_name: ${{ inputs.environment_name }}
+    secrets: inherit
+
+  deploy_webapp_combination:
+    name: Deploy to Azure Web App
+    needs: [build_dotnet, build_spa, check_azure_tokens]
+    if: inputs.dotnet_folder && needs.check_azure_tokens.outputs.has_webapp_name && inputs.spa_folder
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@1.0.0
+    with:
+      spa_artifact: ${{ inputs.spa_deployment_method == 'azure-webapp' && '.spa-app' || '' }}
+      persisted_documents_artifact: ${{ inputs.persisted_documents_file && 'persisted-documents' || '' }}
+      environment_name: ${{ inputs.environment_name }}
+    secrets: inherit
+
+  deploy_azurestorage:
+    name: Deploy SPA to Azure Storage
+    needs: [build_spa, check_azure_tokens]
+    if: inputs.spa_folder && inputs.spa_deployment_method == 'azure-storage' && needs.check_azure_tokens.outputs.has_storage_tokens
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurestorage.yml@1.0.0
+    with:
+      environment_name: ${{ inputs.environment_name }}
+    secrets: inherit
+
+  dotnet_release_assets:
+    name: Publish .NET Release Assets
+    needs: [build_dotnet]
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download .NET artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: '.net-app'
+          path: netapp
+      - name: Zip files together
+        working-directory: netapp
+        run: zip -r ../net-app.zip .
+      - name: Upload net-app.zip as Release Asset
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const fileData = fs.readFileSync(path.join(process.cwd(), 'net-app.zip'));
+            const uploadResult = await github.rest.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: context.payload.release.id,
+              name: 'net-app.zip',
+              data: fileData,
+              headers: {
+                'content-type': 'application/zip',
+                'content-length': fileData.length,
+              },
+            });
+  
+  spa_release_assets:
+    name: Publish SPA Release Assets
+    needs: [build_spa]
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download SPA artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: '.spa-app'
+          path: spaapp
+      - name: Zip files together
+        working-directory: spaapp
+        run: zip -r ../spa-app.zip .
+      - name: Upload spa-app.zip as Release Asset
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const fileData = fs.readFileSync(path.join(process.cwd(), 'spa-app.zip'));
+            const uploadResult = await github.rest.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: context.payload.release.id,
+              name: 'spa-app.zip',
+              data: fileData,
+              headers: {
+                'content-type': 'application/zip',
+                'content-length': fileData.length,
+              },
+            });
+
+  analyze_release_assets:
+    name: Publish SPA Analysis Release Assets
+    needs: [build_spa]
+    if: github.event_name == 'release' && inputs.analysis_artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download SPA analysis artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: analysis
+          path: analysis
+      - name: Zip files together
+        working-directory: analysis
+        run: zip -r ../analysis.zip .
+      - name: Upload analysis.zip as Release Asset
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const fileData = fs.readFileSync(path.join(process.cwd(), 'analysis.zip'));
+            const uploadResult = await github.rest.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: context.payload.release.id,
+              name: 'analysis.zip',
+              data: fileData,
+              headers: {
+                'content-type': 'application/zip',
+                'content-length': fileData.length,
+              },
+            });
+
+  persisted_docs_release_assets:
+    name: Publish SPA Persisted Documents Release Assets
+    needs: [build_spa]
+    if: github.event_name == 'release' && inputs.persisted_documents_file
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download SPA persisted-documents artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: persisted-documents
+          path: persisted-documents
+      - name: Zip files together
+        working-directory: persisted-documents
+        run: zip -r ../persisted-documents.zip .
+      - name: Upload persisted-documents.zip as Release Asset
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const fileData = fs.readFileSync(path.join(process.cwd(), 'persisted-documents.zip'));
+            const uploadResult = await github.rest.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: context.payload.release.id,
+              name: 'persisted-documents.zip',
+              data: fileData,
+              headers: {
+                'content-type': 'application/zip',
+                'content-length': fileData.length,
+              },
+            });

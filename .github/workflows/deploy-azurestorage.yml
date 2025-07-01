@@ -1,0 +1,63 @@
+name: Deploy to Azure Storage
+
+on:
+  workflow_call:
+    inputs:
+      environment_name:
+        description: 'Environment name for deployment'
+        required: true
+        type: string
+      artifact_name:
+        description: 'Name of the SPA artifact to deploy'
+        required: false
+        type: string
+        default: '.spa-app'
+      delete_destination:
+        description: 'Whether to delete the destination before deployment'
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      AZURE_CLIENT_ID:
+        description: 'Client ID for Azure deployment'
+        required: true
+      AZURE_TENANT_ID:
+        description: 'Tenant ID for Azure deployment'
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        description: 'Subscription ID for Azure deployment'
+        required: true
+      AZURE_STORAGE_ACCOUNT:
+        description: 'Azure Storage account name for deployment'
+        required: true
+      AZURE_STORAGE_CONTAINER:
+        description: 'Azure Storage container name for deployment'
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy to Azure Storage
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment_name }}
+    permissions:
+      id-token: write
+    steps:
+      - name: Download SPA artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure Storage
+        env:
+          AZCOPY_AUTO_LOGIN_TYPE: AZCLI
+          AZCOPY_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          azcopy sync '.' 'https://${{ secrets.AZURE_STORAGE_ACCOUNT }}.blob.core.windows.net/${{ secrets.AZURE_STORAGE_CONTAINER }}' --recursive --delete-destination=${{ inputs.delete_destination }}

@@ -1,0 +1,44 @@
+name: 'Add NuGet Sources'
+description: 'Adds multiple NuGet sources based on provided GitHub account names.'
+
+inputs:
+  accounts:
+    description: 'Comma-separated list of GitHub account names to add as NuGet sources.'
+    required: true
+    type: string
+  username:
+    description: 'NuGet feed username (GitHub username).'
+    required: true
+    type: string
+  token:
+    description: 'NuGet feed token (GitHub Personal Access Token).'
+    required: true
+    type: string
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Add NuGet Sources
+      if: inputs.username != '' && inputs.token != '' && inputs.accounts != ''
+      shell: bash
+      run: |
+        ACCOUNTS_INPUT="${{ inputs.accounts }}"
+        
+        # Replace 'default' with the repository owner
+        if [ "$ACCOUNTS_INPUT" = "default" ]; then
+          ACCOUNTS_INPUT="${{ github.repository_owner }}"
+        fi
+        
+        IFS=',' read -ra ACCOUNTS <<< "$ACCOUNTS_INPUT"
+        for ACCOUNT in "${ACCOUNTS[@]}"; do
+          ACCOUNT=$(echo "$ACCOUNT" | xargs)  # Trim whitespace
+          SOURCE_NAME="$ACCOUNT"
+          SOURCE_URL="https://nuget.pkg.github.com/$ACCOUNT/index.json"
+          
+          echo "Adding NuGet source: $SOURCE_NAME at $SOURCE_URL"
+          
+          dotnet nuget add source "$SOURCE_URL" -n "$SOURCE_NAME" \
+            -u "${{ inputs.username }}" \
+            -p "${{ inputs.token }}" \
+            --store-password-in-clear-text
+        done

@@ -1,0 +1,103 @@
+name: Build .NET Application
+
+on:
+  workflow_call:
+    inputs:
+      dotnet_folder:
+        description: 'Path to the .NET project folder'
+        required: true
+        type: string
+      global_json_folder:
+        description: 'Path to the folder containing global.json'
+        required: false
+        type: string
+        default: '.'
+      nuget_accounts:
+        description: 'Comma-separated list of GitHub accounts to add as NuGet sources.'
+        required: false
+        type: string
+        default: 'default'
+      dotnet_configuration:
+        description: '.NET configuration'
+        required: false
+        type: string
+        default: 'Release'
+      artifact_name:
+        description: 'Name of the artifact to upload'
+        required: false
+        type: string
+        default: '.net-app'
+      environment_name:
+        description: 'Environment name for deployment'
+        required: false
+        type: string
+    secrets:
+      NUGET_ORG_USER:
+        required: false
+      NUGET_ORG_TOKEN:
+        required: false
+    outputs:
+      version:
+        description: "The version number used for the build"
+        value: ${{ jobs.build.outputs.version }}
+
+jobs:
+  build:
+    name: Build .NET
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment_name }}
+    outputs:
+      version: ${{ steps.set_version.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set version number
+        id: set_version
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            ref="${GITHUB_REF#refs/tags/}.0"
+          else
+            ref="0.0.0.${GITHUB_RUN_NUMBER}"
+          fi
+          echo "version=$ref" >> $GITHUB_OUTPUT
+          echo "ref=$ref" >> $GITHUB_ENV
+
+      - name: Convert GitHub environment variables to shell environment variables
+        if: inputs.environment_name != ''
+        env:
+          ALL_VARS: ${{ toJson(vars) }}
+        run: |
+          if [ "$ALL_VARS" != "null" ]; then
+            echo "$ALL_VARS" | jq -r 'to_entries[] | "\(.key)=\(.value)"' >> $GITHUB_ENV
+          else
+            echo "No vars to export"
+          fi
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: ${{ inputs.global_json_folder }}/global.json
+
+      - name: Add NuGet Sources
+        if: inputs.nuget_accounts != ''
+        uses: Shane32/SharedWorkflows/.github/actions/add-nuget-sources@1.0.0
+        with:
+          accounts: ${{ inputs.nuget_accounts }}
+          username: ${{ secrets.NUGET_ORG_USER }}
+          token: ${{ secrets.NUGET_ORG_TOKEN }}
+
+      - name: Restore .NET packages
+        run: dotnet restore
+        working-directory: ${{ inputs.dotnet_folder }}
+
+      - name: Publish .NET solution
+        run: dotnet publish --no-restore -p:AssemblyVersion="$ref" -c "${{ inputs.dotnet_configuration }}" -o ./build_output
+        working-directory: ${{ inputs.dotnet_folder }}
+
+      - name: Upload .NET build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ${{ inputs.dotnet_folder }}/build_output

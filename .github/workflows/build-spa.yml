@@ -1,0 +1,125 @@
+name: Build SPA Application
+
+on:
+  workflow_call:
+    inputs:
+      spa_folder:
+        description: 'Path to the SPA project folder'
+        required: true
+        type: string
+      spa_version_env:
+        description: 'Environment variable name to store SPA version'
+        required: false
+        type: string
+        default: 'VITE_VERSION' # or 'REACT_APP_VERSION'
+      npm_build_script:
+        description: 'NPM build script'
+        required: false
+        type: string
+        default: 'build'
+      npm_dist_folder:
+        description: 'Path to the SPA distribution folder'
+        required: false
+        type: string
+        default: 'dist'
+      artifact_name:
+        description: 'Name of the artifact to upload'
+        required: false
+        type: string
+        default: '.spa-app'
+      persisted_documents_file:
+        description: 'Path to the persisted documents file, to be copied to the .NET build folder'
+        required: false
+        type: string
+      persisted_documents_artifact:
+        description: 'Name of the persisted documents artifact to upload'
+        required: false
+        type: string
+        default: 'persisted-documents'
+      environment_name:
+        description: 'Environment name for deployment'
+        required: false
+        type: string
+      npm_analyze_script:
+        description: 'NPM analyze script to run after build'
+        required: false
+        type: string
+      analysis_files:
+        description: 'Full path to files to upload as analysis artifacts (glob pattern)'
+        required: false
+        type: string
+      analysis_artifact:
+        description: 'Name of the analysis artifact to upload'
+        required: false
+        type: string
+        default: 'analysis'
+
+jobs:
+  build_spa:
+    name: Build SPA
+    runs-on: ubuntu-latest
+    environment:
+        name: ${{ inputs.environment_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set version number
+        if: inputs.spa_version_env
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            ref="${GITHUB_REF#refs/tags/}.0"
+          else
+            ref="0.0.0.${GITHUB_RUN_NUMBER}"
+          fi
+          echo "${{ inputs.spa_version_env }}=$ref" >> $GITHUB_ENV
+
+      - name: Convert GitHub environment variables to shell environment variables
+        if: inputs.environment_name != ''
+        env:
+          ALL_VARS: ${{ toJson(vars) }}
+        run: |
+          if [ "$ALL_VARS" != "null" ]; then
+            echo "$ALL_VARS" | jq -r 'to_entries[] | "\(.key)=\(.value)"' >> $GITHUB_ENV
+          else
+            echo "No vars to export"
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ inputs.spa_folder }}/package.json
+
+      - name: Install SPA dependencies
+        run: npm ci
+        working-directory: ${{ inputs.spa_folder }}
+
+      - name: Build SPA
+        run: npm run ${{ inputs.npm_build_script }}
+        working-directory: ${{ inputs.spa_folder }}
+
+      - name: Upload SPA build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: ${{ inputs.spa_folder }}/${{ inputs.npm_dist_folder }}
+
+      - name: Upload SPA persisted documents file
+        if: inputs.persisted_documents_file
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.persisted_documents_artifact }}
+          path: ${{ inputs.persisted_documents_file }}
+          if-no-files-found: error
+
+      - name: Run NPM analyze script
+        if: inputs.npm_analyze_script
+        run: npm run ${{ inputs.npm_analyze_script }}
+        working-directory: ${{ inputs.spa_folder }}
+
+      - name: Upload analysis artifacts
+        if: inputs.analysis_files
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.analysis_artifact }}
+          path: ${{ inputs.analysis_files }}

@@ -1,0 +1,348 @@
+name: Build Check
+
+on:
+  workflow_call:
+    inputs:
+      dotnet_folder:
+        description: 'Path to the .NET project folder'
+        required: false
+        type: string
+      spa_folder:
+        description: 'Path to the SPA project folder'
+        required: false
+        type: string
+      npm_build_script:
+        description: 'NPM build script'
+        required: false
+        type: string
+        default: 'build'
+      npm_test_script:
+        description: 'NPM test script'
+        required: false
+        type: string
+        default: 'test'
+      dotnet_test_settings:
+        description: '.NET test settings XML file location'
+        required: false
+        type: string
+        default: 'testsettings.xml'
+      npm_lint_script:
+        description: 'NPM lint script'
+        required: false
+        type: string
+        default: 'lint'
+      npm_prettier_script:
+        description: 'NPM Prettier check script'
+        required: false
+        type: string
+        default: 'prettier:check'
+      global_json_folder:
+        description: 'Path to the folder containing global.json'
+        required: false
+        type: string
+        default: '.'
+      dotnet_format_severity:
+        description: '.NET format severity level'
+        required: false
+        type: string
+        default: 'error'
+      format:
+        description: 'Enable or disable formatting checks'
+        required: false
+        type: string
+        default: ''
+      build:
+        description: 'Enable or disable build checks'
+        required: false
+        type: string
+        default: 'true'
+      dotnet_build_runner:
+        description: 'Runner for .NET builds'
+        required: false
+        type: string
+        default: 'ubuntu-latest'
+      coverage_alert_threshold:
+        description: 'Coverage alert threshold percentage'
+        required: false
+        type: number
+        default: 20
+      coverage_warning_threshold:
+        description: 'Coverage warning threshold percentage'
+        required: false
+        type: number
+        default: 80
+      nuget_accounts:
+        description: 'Comma-separated list of GitHub accounts to add as NuGet sources.'
+        required: false
+        type: string
+        default: 'default'
+      coverage_report:
+        description: 'Enable or disable coverage reports'
+        required: false
+        type: string
+      npm_analyze_script:
+        description: 'NPM analyze script to run after build'
+        required: false
+        type: string
+      analysis_artifacts:
+        description: 'Full path to files to upload as analysis artifacts (glob pattern)'
+        required: false
+        type: string
+      data_collector:
+        description: 'Data collector for dotnet test'
+        required: false
+        type: string
+        default: 'XPlat Code Coverage'
+      coveralls:
+        description: 'Enable Coveralls support'
+        required: false
+        type: string
+
+    secrets:
+      NUGET_ORG_USER:
+        required: false
+      NUGET_ORG_TOKEN:
+        required: false
+      CODECOV_TOKEN:
+        required: false
+
+jobs:
+  build_net:
+    name: .NET
+    runs-on: ${{ inputs.dotnet_build_runner }}
+    if: inputs.build == 'true' && inputs.dotnet_folder
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: ${{ inputs.global_json_folder }}/global.json
+
+      - name: Add NuGet Sources
+        if: inputs.nuget_accounts != ''
+        uses: Shane32/SharedWorkflows/.github/actions/add-nuget-sources@1.0.0
+        with:
+          accounts: ${{ inputs.nuget_accounts }}
+          username: ${{ secrets.NUGET_ORG_USER }}
+          token: ${{ secrets.NUGET_ORG_TOKEN }}
+  
+      - name: Restore packages for solution
+        run: dotnet restore
+        working-directory: ${{ inputs.dotnet_folder }}
+
+      - name: Build solution
+        run: dotnet build --no-restore -c Debug
+        working-directory: ${{ inputs.dotnet_folder }}
+
+      - name: Check if test settings file exists
+        id: check_test_settings
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.dotnet_test_settings }}" ] && [ -f "${{ inputs.dotnet_folder }}/${{ inputs.dotnet_test_settings }}" ]; then
+            echo "has_test_settings=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_test_settings=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run tests with test settings
+        if: steps.check_test_settings.outputs.has_test_settings == 'true' && inputs.data_collector != ''
+        shell: bash
+        run: |
+          dotnet test --no-build --verbosity normal -c Debug \
+            --collect:"${{ inputs.data_collector }}" \
+            --settings ${{ inputs.dotnet_test_settings }} \
+            --results-directory ./TestResults
+        working-directory: ${{ inputs.dotnet_folder }}
+
+      - name: Run tests with test settings (no data collector)
+        if: steps.check_test_settings.outputs.has_test_settings == 'true' && inputs.data_collector == ''
+        shell: bash
+        run: |
+          dotnet test --no-build --verbosity normal -c Debug \
+            --settings ${{ inputs.dotnet_test_settings }} \
+            --results-directory ./TestResults
+        working-directory: ${{ inputs.dotnet_folder }}
+
+      - name: Run tests without test settings
+        if: steps.check_test_settings.outputs.has_test_settings == 'false' && inputs.data_collector != ''
+        shell: bash
+        run: |
+          dotnet test --no-build --verbosity normal -c Debug \
+            --collect:"${{ inputs.data_collector }}" \
+            --results-directory ./TestResults
+        working-directory: ${{ inputs.dotnet_folder }}
+
+      - name: Run tests without test settings (no data collector)
+        if: steps.check_test_settings.outputs.has_test_settings == 'false' && inputs.data_collector == ''
+        shell: bash
+        run: |
+          dotnet test --no-build --verbosity normal -c Debug \
+            --results-directory ./TestResults
+        working-directory: ${{ inputs.dotnet_folder }}
+
+      - name: Check if CODECOV_TOKEN is defined
+        id: check_codecov_token
+        shell: bash
+        run: |
+          if [ -z "${{ secrets.CODECOV_TOKEN }}" ]; then
+            echo "has_codecov_token=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_codecov_token=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload coverage to Codecov
+        if: steps.check_codecov_token.outputs.has_codecov_token == 'true'
+        uses: codecov/codecov-action@v5
+        with:
+          verbose: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload coverage to Coveralls
+        if: inputs.coveralls != ''
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Copy coverage files
+        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request'
+        shell: bash
+        working-directory: ${{ inputs.dotnet_folder }}/TestResults
+        run: find . -type f -exec cp {} .. \;
+
+      - name: Convert coverage report to Clover & HtmlSummary format
+        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request'
+        uses: danielpalme/ReportGenerator-GitHub-Action@4.8.12
+        with:
+          reports: 'coverage.info'
+          targetdir: ${{ inputs.dotnet_folder }}
+          reporttypes: 'Clover;HtmlSummary'
+          tag: 'test_${{ github.run_number }}'
+
+      - name: Convert coverage report to HTML
+        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request'
+        uses: danielpalme/ReportGenerator-GitHub-Action@4.8.12
+        with:
+          reports: 'coverage.info'
+          targetdir: '${{ inputs.dotnet_folder }}/cloverreport'
+          reporttypes: 'Html'
+          tag: 'test_${{ github.run_number }}'
+
+      - name: Upload artifacts
+        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Code Coverage Artifacts
+          path: |
+            ${{ inputs.dotnet_folder }}/coverage.info
+            ${{ inputs.dotnet_folder }}/Clover.xml
+            ${{ inputs.dotnet_folder }}/cloverreport/**
+            ${{ inputs.dotnet_folder }}/summary.html
+
+      - name: Monitor coverage
+        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: slavcodev/coverage-monitor-action@1.2.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          clover_file: "${{ inputs.dotnet_folder }}/Clover.xml"
+          threshold_alert: ${{ inputs.coverage_alert_threshold }}
+          threshold_warning: ${{ inputs.coverage_warning_threshold }}
+
+  build_spa:
+    name: SPA
+    runs-on: ubuntu-latest
+    if: inputs.build == 'true' && inputs.spa_folder
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ inputs.spa_folder }}/package.json
+
+      - name: Install Dependencies
+        run: npm ci
+        working-directory: ${{ inputs.spa_folder }}
+
+      - name: Build SPA
+        run: npm run ${{ inputs.npm_build_script }}
+        working-directory: ${{ inputs.spa_folder }}
+
+      - name: Run analysis
+        if: inputs.npm_analyze_script != ''
+        run: npm run ${{ inputs.npm_analyze_script }}
+        working-directory: ${{ inputs.spa_folder }}
+
+      - name: Upload analysis artifacts
+        if: inputs.analysis_artifacts != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: Analysis Artifacts
+          path: ${{ inputs.analysis_artifacts }}
+
+      - name: Run tests
+        if: ${{ inputs.npm_test_script != '' }}
+        run: npm run ${{ inputs.npm_test_script }}
+        working-directory: ${{ inputs.spa_folder }}
+
+  format_net:
+    name: .NET Formatting
+    runs-on: ubuntu-latest
+    if: (inputs.format == 'true' || (inputs.format == '' && github.event_name == 'pull_request')) && inputs.dotnet_folder
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: ${{ inputs.global_json_folder }}/global.json
+
+      - name: Add NuGet Sources
+        if: inputs.nuget_accounts != ''
+        uses: Shane32/SharedWorkflows/.github/actions/add-nuget-sources@1.0.0
+        with:
+          accounts: ${{ inputs.nuget_accounts }}
+          username: ${{ secrets.NUGET_ORG_USER }}
+          token: ${{ secrets.NUGET_ORG_TOKEN }}
+  
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: ${{ inputs.dotnet_folder }}
+
+      - name: Check formatting
+        run: |
+          dotnet format --no-restore --verify-no-changes --severity ${{ inputs.dotnet_format_severity }} \
+            --exclude **/Migrations/**
+        working-directory: ${{ inputs.dotnet_folder }}
+
+  format_spa:
+    name: SPA Formatting
+    runs-on: ubuntu-latest
+    if: (inputs.format == 'true' || (inputs.format == '' && github.event_name == 'pull_request')) && inputs.spa_folder
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ${{ inputs.spa_folder }}/package.json
+
+      - name: Install Dependencies
+        run: npm ci
+        working-directory: ${{ inputs.spa_folder }}
+
+      - name: Run Lint
+        if: ${{ inputs.npm_lint_script != '' }}
+        run: npm run ${{ inputs.npm_lint_script }}
+        working-directory: ${{ inputs.spa_folder }}
+
+      - name: Check Prettier Formatting
+        if: ${{ inputs.npm_prettier_script != '' }}
+        run: npm run ${{ inputs.npm_prettier_script }}
+        working-directory: ${{ inputs.spa_folder }}
