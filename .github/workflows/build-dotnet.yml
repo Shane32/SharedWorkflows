@@ -31,6 +31,11 @@ on:
         description: 'Environment name for deployment'
         required: false
         type: string
+      pack:
+        description: 'If true, use dotnet pack instead of dotnet publish'
+        required: false
+        type: boolean
+        default: false
     secrets:
       NUGET_ORG_USER:
         required: false
@@ -38,7 +43,7 @@ on:
         required: false
     outputs:
       version:
-        description: "The version number used for the build"
+        description: "The assembly version number used for the build"
         value: ${{ jobs.build.outputs.version }}
 
 jobs:
@@ -58,8 +63,13 @@ jobs:
         run: |
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             ref="${GITHUB_REF#refs/tags/}.0"
+            tag_version="${GITHUB_REF#refs/tags/}"
+            echo "nuget_version=$tag_version" >> $GITHUB_ENV
+            echo "is_release=true" >> $GITHUB_ENV
           else
             ref="0.0.0.${GITHUB_RUN_NUMBER}"
+            echo "version_suffix=${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+            echo "is_release=false" >> $GITHUB_ENV
           fi
           echo "version=$ref" >> $GITHUB_OUTPUT
           echo "ref=$ref" >> $GITHUB_ENV
@@ -92,7 +102,18 @@ jobs:
         run: dotnet restore
         working-directory: ${{ inputs.dotnet_folder }}
 
+      - name: Pack .NET solution
+        if: inputs.pack == true
+        run: |
+          if [ "$is_release" = "true" ]; then
+            dotnet pack --no-restore -p:AssemblyVersion="$ref" -p:Version="$nuget_version" -c "${{ inputs.dotnet_configuration }}" -o ./build_output
+          else
+            dotnet pack --no-restore -p:AssemblyVersion="$ref" -p:VersionSuffix="$version_suffix" -c "${{ inputs.dotnet_configuration }}" -o ./build_output
+          fi
+        working-directory: ${{ inputs.dotnet_folder }}
+
       - name: Publish .NET solution
+        if: inputs.pack == false
         run: dotnet publish --no-restore -p:AssemblyVersion="$ref" -c "${{ inputs.dotnet_configuration }}" -o ./build_output
         working-directory: ${{ inputs.dotnet_folder }}
 

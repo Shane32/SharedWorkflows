@@ -54,8 +54,8 @@ on:
       build:
         description: 'Enable or disable build checks'
         required: false
-        type: string
-        default: 'true'
+        type: boolean
+        default: true
       dotnet_build_runner:
         description: 'Runner for .NET builds'
         required: false
@@ -96,7 +96,8 @@ on:
       coveralls:
         description: 'Enable Coveralls support'
         required: false
-        type: string
+        type: boolean
+        default: false
 
     secrets:
       NUGET_ORG_USER:
@@ -110,7 +111,7 @@ jobs:
   build_net:
     name: .NET
     runs-on: ${{ inputs.dotnet_build_runner }}
-    if: inputs.build == 'true' && inputs.dotnet_folder
+    if: inputs.build && inputs.dotnet_folder
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -141,6 +142,23 @@ jobs:
         shell: bash
         run: |
           if [ -n "${{ inputs.dotnet_test_settings }}" ] && [ -f "${{ inputs.dotnet_folder }}/${{ inputs.dotnet_test_settings }}" ]; then
+            echo "has_test_settings=true" >> $GITHUB_OUTPUT
+          elif [ -n "${{ inputs.dotnet_test_settings }}" ]; then
+            echo "Creating default test settings file: ${{ inputs.dotnet_test_settings }}"
+            cat > "${{ inputs.dotnet_folder }}/${{ inputs.dotnet_test_settings }}" << 'EOF'
+          <?xml version="1.0" encoding="utf-8" ?>
+          <RunSettings>
+            <DataCollectionRunSettings>
+              <DataCollectors>
+                <DataCollector friendlyName="XPlat Code coverage">
+                  <Configuration>
+                    <Format>lcov,cobertura</Format>
+                  </Configuration>
+                </DataCollector>
+              </DataCollectors>
+            </DataCollectionRunSettings>
+          </RunSettings>
+          EOF
             echo "has_test_settings=true" >> $GITHUB_OUTPUT
           else
             echo "has_test_settings=false" >> $GITHUB_OUTPUT
@@ -201,7 +219,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Upload coverage to Coveralls
-        if: inputs.coveralls != ''
+        if: inputs.coveralls
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -254,7 +272,7 @@ jobs:
   build_spa:
     name: SPA
     runs-on: ubuntu-latest
-    if: inputs.build == 'true' && inputs.spa_folder
+    if: inputs.build && inputs.spa_folder
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

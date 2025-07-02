@@ -1,0 +1,138 @@
+name: Publish NuGet Package
+
+on:
+  workflow_call:
+    inputs:
+      dotnet_folder:
+        description: 'Path to the .NET project folder'
+        required: true
+        type: string
+      global_json_folder:
+        description: 'Path to the folder containing global.json'
+        required: false
+        type: string
+        default: '.'
+      nuget_accounts:
+        description: 'Comma-separated list of GitHub accounts to add as NuGet sources.'
+        required: false
+        type: string
+        default: 'default'
+      dotnet_configuration:
+        description: '.NET configuration'
+        required: false
+        type: string
+        default: 'Release'
+      environment_name:
+        description: 'Environment name for deployment'
+        required: false
+        type: string
+      publish_to_nuget:
+        description: 'Force publishing to NuGet.org instead of GitHub Packages (requires NUGET_AUTH_TOKEN)'
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      NUGET_AUTH_TOKEN:
+        description: 'Token for publishing to NuGet.org (used for releases or when publish_to_nuget is true)'
+        required: false
+      NUGET_ORG_USER:
+        description: 'Username for private NuGet source (used during build)'
+        required: false
+      NUGET_ORG_TOKEN:
+        description: 'Token for private NuGet source (used during build)'
+        required: false
+    outputs:
+      version:
+        description: "The assembly version number used for the build"
+        value: ${{ jobs.build.outputs.version }}
+
+jobs:
+  build:
+    name: Build NuGet Package
+    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@1.0.0
+    with:
+      dotnet_folder: ${{ inputs.dotnet_folder }}
+      global_json_folder: ${{ inputs.global_json_folder }}
+      nuget_accounts: ${{ inputs.nuget_accounts }}
+      dotnet_configuration: ${{ inputs.dotnet_configuration }}
+      environment_name: ${{ inputs.environment_name }}
+      pack: true
+    secrets:
+      NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
+      NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
+
+  publish:
+    name: Publish NuGet Package
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment_name }}
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: '.net-app'
+          path: ./packages
+
+      - name: Check for NuGet packages
+        run: |
+          if ls ./packages/*.nupkg 1> /dev/null 2>&1; then
+            echo "Found NuGet packages:"
+            ls -la ./packages/*.nupkg
+          else
+            echo "No NuGet packages found in build output"
+            exit 1
+          fi
+
+      - name: Determine NuGet source and token
+        id: nuget_config
+        run: |
+          # Determine if we should publish to NuGet.org
+          should_publish_to_nuget=false
+          
+          # Check if this is a release event
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "Release event detected"
+            if [ -n "${{ secrets.NUGET_AUTH_TOKEN }}" ]; then
+              should_publish_to_nuget=true
+              echo "NUGET_AUTH_TOKEN available for release - will publish to NuGet.org"
+            else
+              echo "No NUGET_AUTH_TOKEN for release - will publish to GitHub Packages"
+            fi
+          # Check if publish_to_nuget is explicitly set to true
+          elif [ "${{ inputs.publish_to_nuget }}" = "true" ]; then
+            echo "publish_to_nuget=true specified"
+            if [ -n "${{ secrets.NUGET_AUTH_TOKEN }}" ]; then
+              should_publish_to_nuget=true
+              echo "NUGET_AUTH_TOKEN available - will publish to NuGet.org"
+            else
+              echo "ERROR: publish_to_nuget=true but NUGET_AUTH_TOKEN not provided"
+              exit 1
+            fi
+          else
+            echo "Non-release build without publish_to_nuget=true - will publish to GitHub Packages"
+          fi
+          
+          # Configure source based on decision
+          if [ "$should_publish_to_nuget" = "true" ]; then
+            echo "source_url=https://api.nuget.org/v3/index.json" >> $GITHUB_OUTPUT
+            echo "auth_token=${{ secrets.NUGET_AUTH_TOKEN }}" >> $GITHUB_OUTPUT
+            echo "target=NuGet.org" >> $GITHUB_OUTPUT
+          else
+            echo "source_url=https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" >> $GITHUB_OUTPUT
+            echo "auth_token=${{ secrets.GITHUB_TOKEN }}" >> $GITHUB_OUTPUT
+            echo "target=GitHub Packages (${{ github.repository_owner }})" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: ${{ inputs.global_json_folder }}/global.json
+          source-url: ${{ steps.nuget_config.outputs.source_url }}
+        env:
+          NUGET_AUTH_TOKEN: ${{ steps.nuget_config.outputs.auth_token }}
+
+      - name: Publish NuGet packages
+        run: |
+          echo "Publishing to: ${{ steps.nuget_config.outputs.target }}"
+          dotnet nuget push "packages/*.nupkg" -k ${{ steps.nuget_config.outputs.auth_token }} --skip-duplicate

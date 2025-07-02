@@ -6,6 +6,7 @@ See each workflow's respective readme for more details:
 - [Build Check workflow for pull requests and pushing coverage reports](build-check.md)
 - [Build SPA workflow for Single Page Applications](build-spa.md)
 - [Build .NET workflow for .NET applications](build-dotnet.md)
+- [Publish NuGet Package workflow for building and publishing NuGet packages](publish-nuget.md)
 - [Deploy Azure Web App workflow for web application deployments](deploy-azurewebapp.md)
 - [Deploy Azure Storage workflow for static content deployments](deploy-azurestorage.md)
 - [Combination Build and Deploy Application workflow for both .NET and SPA code](publish-app.md)

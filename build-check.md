@@ -43,7 +43,7 @@ The `Build Check` workflow includes:
 | `nuget_accounts`        | NuGet Accounts to configure               | No           | Repository owner        | Skipped if tokens are not provided             |
 | `dotnet_test_settings`  | .NET test settings XML file location      | No           | `testsettings.xml`      | Only used if file exists                       |
 | `data_collector`        | Data collector for dotnet test            | No           | `XPlat Code Coverage`   | If blank then setting is not applied           |
-| `coveralls`             | Enable Coveralls support                  | No           | None                    | Enabled when value is not empty                |
+| `coveralls`             | Enable Coveralls support                  | No           | `false`                 |                                                |
 | `coverage_alert_threshold` | Coverage alert threshold               | No           | 20                      |                                                |
 | `coverage_warning_threshold` | Coverage warning threshold           | No           | 80                      |                                                |
 | `coverage_report`       | Enable or disable local coverage report   | No           | Automatic               | By default it is disabled when codecov is used |
