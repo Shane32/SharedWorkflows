@@ -218,11 +218,29 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Upload coverage to Coveralls
+      - name: Find coverage.info files
         if: inputs.coveralls
+        id: find-coverage
+        shell: bash
+        working-directory: ${{ inputs.dotnet_folder }}
+        run: |
+          files=$(find TestResults -type f -name 'coverage.info' 2>/dev/null | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+          if [ -n "$files" ]; then
+            echo "coverage_files=$files" >> "$GITHUB_OUTPUT"
+            echo "has_coverage=true" >> "$GITHUB_OUTPUT"
+            echo "Found coverage files: $files"
+          else
+            echo "has_coverage=false" >> "$GITHUB_OUTPUT"
+            echo "No coverage.info files found"
+          fi
+
+      - name: Upload coverage to Coveralls
+        if: inputs.coveralls && steps.find-coverage.outputs.has_coverage == 'true'
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          files: ${{ steps.find-coverage.outputs.coverage_files }}
+          base-path: ${{ inputs.dotnet_folder }}
 
       - name: Copy coverage files
         if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request'
