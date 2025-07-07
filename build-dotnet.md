@@ -53,9 +53,10 @@ If an environment is configured, variables configured for the specified environm
 
 ### Outputs
 
-| **Output Name** | **Description**                    | **Example Value** |
-|-----------------|------------------------------------|-------------------|
-| `version`       | The assembly version number used for build  | `1.2.3.0` or `0.0.0.123` |
+| **Output Name**  | **Description**                             | **Example Value**        |
+|------------------|---------------------------------------------|--------------------------|
+| `version`        | The assembly version number used for build  | `1.2.3.0` or `0.0.0.123` |
+| `dotnet_version` | The .NET SDK version used for the build     | `8.0.404`                |
 
 ## Example Usage Scripts
 
