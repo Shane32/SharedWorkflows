@@ -236,7 +236,7 @@ jobs:
 
       - name: Upload coverage to Coveralls
         if: inputs.coveralls && steps.find-coverage.outputs.has_coverage == 'true'
-        uses: coverallsapp/github-action@v1.1.2
+        uses: coverallsapp/github-action@v1.1.2   # can't get v2 to work
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: ${{ steps.find-coverage.outputs.coverage_files }}
