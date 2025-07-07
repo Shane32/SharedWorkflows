@@ -49,7 +49,7 @@ on:
 jobs:
   build:
     name: Build NuGet Package
-    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@1.0.0
+    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@1.0.2
     with:
       dotnet_folder: ${{ inputs.dotnet_folder }}
       global_json_folder: ${{ inputs.global_json_folder }}
@@ -127,6 +127,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v4
         with:
+          dotnet-version: ${{ needs.build.outputs.dotnet_version }}
           source-url: ${{ steps.nuget_config.outputs.source_url }}
         env:
           NUGET_AUTH_TOKEN: ${{ steps.nuget_config.outputs.auth_token }}

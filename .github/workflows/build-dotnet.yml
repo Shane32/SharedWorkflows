@@ -45,6 +45,9 @@ on:
       version:
         description: "The assembly version number used for the build"
         value: ${{ jobs.build.outputs.version }}
+      dotnet_version:
+        description: "The .NET SDK version used for the build"
+        value: ${{ jobs.build.outputs.dotnet_version }}
 
 jobs:
   build:
@@ -54,6 +57,7 @@ jobs:
       name: ${{ inputs.environment_name }}
     outputs:
       version: ${{ steps.set_version.outputs.version }}
+      dotnet_version: ${{ steps.setup_dotnet.outputs.dotnet-version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -86,6 +90,7 @@ jobs:
           fi
 
       - name: Setup .NET Core
+        id: setup_dotnet
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: ${{ inputs.global_json_folder }}/global.json
