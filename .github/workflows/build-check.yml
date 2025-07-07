@@ -240,6 +240,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           files: ${{ steps.find-coverage.outputs.coverage_files }}
+          format: lcov
           base-path: ${{ inputs.dotnet_folder }}
 
       - name: Copy coverage files
