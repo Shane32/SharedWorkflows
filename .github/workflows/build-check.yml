@@ -236,12 +236,10 @@ jobs:
 
       - name: Upload coverage to Coveralls
         if: inputs.coveralls && steps.find-coverage.outputs.has_coverage == 'true'
-        uses: coverallsapp/github-action@v2
+        uses: coverallsapp/github-action@v1.1.2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          files: ${{ steps.find-coverage.outputs.coverage_files }}
-          format: lcov
-          base-path: ${{ inputs.dotnet_folder }}
+          path-to-lcov: ${{ steps.find-coverage.outputs.coverage_files }}
 
       - name: Copy coverage files
         if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request'
