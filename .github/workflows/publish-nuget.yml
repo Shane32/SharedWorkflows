@@ -127,7 +127,6 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          global-json-file: ${{ inputs.global_json_folder }}/global.json
           source-url: ${{ steps.nuget_config.outputs.source_url }}
         env:
           NUGET_AUTH_TOKEN: ${{ steps.nuget_config.outputs.auth_token }}
