@@ -80,6 +80,10 @@ name: PR Tests
 on:
   pull_request:
 
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   build-check:
     uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v1
@@ -117,6 +121,10 @@ name: PR Tests
 
 on:
   pull_request:
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   build-check:
