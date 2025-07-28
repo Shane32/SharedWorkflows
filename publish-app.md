@@ -90,6 +90,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   publish-application:
     uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v1
@@ -116,6 +120,10 @@ on:
   push:
     branches:
       - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   publish-application:
