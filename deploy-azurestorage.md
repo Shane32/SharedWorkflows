@@ -67,6 +67,9 @@ on:
 jobs:
   deploy-to-storage:
     uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurestorage.yml@v2
+    permissions:
+      contents: read
+      id-token: write
     with:
       environment_name: Production
 ```
@@ -86,6 +89,9 @@ on:
 jobs:
   deploy-to-storage:
     uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurestorage.yml@v2
+    permissions:
+      contents: read
+      id-token: write
     with:
       environment_name: Staging
       artifact_name: staging-spa-build
@@ -104,3 +110,4 @@ The above example shows how to provide Azure configuration values as workflow in
 - The workflow expects an artifact containing the built static content to be available from a previous job.
 - Uses AzCopy's sync command with `--delete-destination` which defaults to `true` but can be overridden as needed.
 - Requires appropriate Azure RBAC permissions for the provided service principal (Client ID) to manage blob storage.
+- The `permissions: id-token: write` is required for Azure deployment workflows to enable OIDC authentication with Azure.
