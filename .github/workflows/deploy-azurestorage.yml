@@ -17,22 +17,26 @@ on:
         required: false
         type: boolean
         default: true
-    secrets:
-      AZURE_CLIENT_ID:
+      azure_client_id:
         description: 'Client ID for Azure deployment'
-        required: true
-      AZURE_TENANT_ID:
+        required: false
+        type: string
+      azure_tenant_id:
         description: 'Tenant ID for Azure deployment'
-        required: true
-      AZURE_SUBSCRIPTION_ID:
+        required: false
+        type: string
+      azure_subscription_id:
         description: 'Subscription ID for Azure deployment'
-        required: true
-      AZURE_STORAGE_ACCOUNT:
+        required: false
+        type: string
+      azure_storage_account:
         description: 'Azure Storage account name for deployment'
-        required: true
-      AZURE_STORAGE_CONTAINER:
+        required: false
+        type: string
+      azure_storage_container:
         description: 'Azure Storage container name for deployment'
-        required: true
+        required: false
+        type: string
 
 jobs:
   deploy:
@@ -43,6 +47,44 @@ jobs:
     permissions:
       id-token: write
     steps:
+      - name: Validate required inputs
+        env:
+          AZURE_CLIENT_ID: ${{ inputs.azure_client_id || vars.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ inputs.azure_tenant_id || vars.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id || vars.AZURE_SUBSCRIPTION_ID }}
+          AZURE_STORAGE_ACCOUNT: ${{ inputs.azure_storage_account || vars.AZURE_STORAGE_ACCOUNT }}
+          AZURE_STORAGE_CONTAINER: ${{ inputs.azure_storage_container || vars.AZURE_STORAGE_CONTAINER }}
+        run: |
+          MISSING_VARS=""
+          
+          if [ -z "$AZURE_CLIENT_ID" ]; then
+            MISSING_VARS="$MISSING_VARS AZURE_CLIENT_ID"
+          fi
+          
+          if [ -z "$AZURE_TENANT_ID" ]; then
+            MISSING_VARS="$MISSING_VARS AZURE_TENANT_ID"
+          fi
+          
+          if [ -z "$AZURE_SUBSCRIPTION_ID" ]; then
+            MISSING_VARS="$MISSING_VARS AZURE_SUBSCRIPTION_ID"
+          fi
+          
+          if [ -z "$AZURE_STORAGE_ACCOUNT" ]; then
+            MISSING_VARS="$MISSING_VARS AZURE_STORAGE_ACCOUNT"
+          fi
+          
+          if [ -z "$AZURE_STORAGE_CONTAINER" ]; then
+            MISSING_VARS="$MISSING_VARS AZURE_STORAGE_CONTAINER"
+          fi
+          
+          if [ -n "$MISSING_VARS" ]; then
+            echo "❌ Missing required variables or inputs:$MISSING_VARS"
+            echo "Please provide these as workflow inputs or repository/environment variables."
+            exit 1
+          fi
+          
+          echo "✅ All required variables are provided"
+
       - name: Download SPA artifact
         uses: actions/download-artifact@v4
         with:
@@ -51,13 +93,13 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ inputs.azure_client_id || vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ inputs.azure_tenant_id || vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ inputs.azure_subscription_id || vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Deploy to Azure Storage
         env:
           AZCOPY_AUTO_LOGIN_TYPE: AZCLI
-          AZCOPY_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZCOPY_TENANT_ID: ${{ inputs.azure_tenant_id || vars.AZURE_TENANT_ID }}
         run: |
-          azcopy sync '.' 'https://${{ secrets.AZURE_STORAGE_ACCOUNT }}.blob.core.windows.net/${{ secrets.AZURE_STORAGE_CONTAINER }}' --recursive --delete-destination=${{ inputs.delete_destination }}
+          azcopy sync '.' 'https://${{ inputs.azure_storage_account || vars.AZURE_STORAGE_ACCOUNT }}.blob.core.windows.net/${{ inputs.azure_storage_container || vars.AZURE_STORAGE_CONTAINER }}' --recursive --delete-destination=${{ inputs.delete_destination }}

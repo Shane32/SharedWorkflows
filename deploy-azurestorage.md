@@ -29,10 +29,20 @@ The **Deploy to Azure Storage** workflow includes the following features:
 | `environment_name`        | Environment name for deployment                       | Yes          | None              |
 | `artifact_name`           | Name of the SPA artifact to deploy                    | No           | `.spa-app`        |
 | `delete_destination`      | Whether to delete files in destination not in source  | No           | `true`            |
+| `azure_client_id`         | Client ID for Azure deployment                        | No           | None              |
+| `azure_tenant_id`         | Tenant ID for Azure deployment                        | No           | None              |
+| `azure_subscription_id`   | Subscription ID for Azure deployment                  | No           | None              |
+| `azure_storage_account`   | Azure Storage account name for deployment             | No           | None              |
+| `azure_storage_container` | Azure Storage container name for deployment           | No           | None              |
 
-### Required Secrets
+### Required Variables or Inputs
 
-| **Secret Name**           | **Description**                             | **Required** |
+The workflow requires the following Azure configuration values to be provided either as:
+
+- **Workflow inputs** (as shown in the table above), or
+- **Repository/Environment variables** with these names:
+
+| **Variable Name**         | **Description**                             | **Required** |
 |---------------------------|---------------------------------------------|--------------|
 | `AZURE_CLIENT_ID`         | Client ID for Azure deployment              | Yes          |
 | `AZURE_TENANT_ID`         | Tenant ID for Azure deployment              | Yes          |
@@ -40,7 +50,7 @@ The **Deploy to Azure Storage** workflow includes the following features:
 | `AZURE_STORAGE_ACCOUNT`   | Azure Storage account name for deployment   | Yes          |
 | `AZURE_STORAGE_CONTAINER` | Azure Storage container name for deployment | Yes          |
 
-:warning: To use environment-scoped secrets, you must use `secrets: inherit`. :warning:
+The workflow will first check for values provided as inputs, and if not found, will fall back to repository or environment variables. If neither is available, the workflow will fail with a validation error.
 
 ## Example Usage Scripts
 
@@ -56,13 +66,12 @@ on:
 
 jobs:
   deploy-to-storage:
-    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurestorage.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurestorage.yml@v2
     with:
       environment_name: Production
-    secrets: inherit
 ```
 
-The above example assumes that the necessary secrets are stored in GitHub's environment secrets.
+The above example assumes that the necessary Azure configuration values are stored as GitHub environment variables.
 
 ### 2. Deployment to Staging Environment with Custom Artifact
 
@@ -76,20 +85,19 @@ on:
 
 jobs:
   deploy-to-storage:
-    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurestorage.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurestorage.yml@v2
     with:
       environment_name: Staging
       artifact_name: staging-spa-build
       delete_destination: false
-    secrets:
-      AZURE_STORAGE_ACCOUNT: mystagingsite
-      AZURE_STORAGE_CONTAINER: static
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_STAGING_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_STAGING_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_STAGING_SUBSCRIPTION_ID }}
+      azure_storage_account: mystagingsite
+      azure_storage_container: static
+      azure_client_id: ${{ secrets.AZURE_STAGING_CLIENT_ID }}
+      azure_tenant_id: ${{ secrets.AZURE_STAGING_TENANT_ID }}
+      azure_subscription_id: ${{ secrets.AZURE_STAGING_SUBSCRIPTION_ID }}
 ```
 
-The above example assumes that the necessary secrets are stored in the repository secrets.
+The above example shows how to provide Azure configuration values as workflow inputs, pulling from repository secrets.
 
 ## Notes
 

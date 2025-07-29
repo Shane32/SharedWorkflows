@@ -60,7 +60,7 @@ This guide explains how to set up the necessary permissions and credentials to a
    - Click "New environment"
    - Name it `Production` (or as needed by the workflow)
    - Add any required environment protection rules
-   - Add the following secrets:
+   - Add the following environment variables:
      - `AZURE_CLIENT_ID`: The client ID of the managed identity (found in Managed Identity > Overview)
      - `AZURE_SUBSCRIPTION_ID`: Your Azure subscription ID (found in Managed Identity > Overview)
      - `AZURE_TENANT_ID`: Your Azure tenant ID (found in Managed Identity > Settings > Properties)
@@ -79,7 +79,7 @@ Repeat the above steps with these modifications:
    - Environment name: `Development`
 4. In GitHub:
    - Create a new environment named `Development`
-   - Add the same secrets but with the development managed identity details
+   - Add the same environment variables but with the development managed identity details
 
 ## Workflow Configuration
 
@@ -95,13 +95,19 @@ on:
     branches:
       - master
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v1
-    secrets: inherit
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
     with:
       environment_name: Development
       dotnet_folder: '.'
+    secrets:
+      NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
+      NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
 ```
 
 ### Production Environment (on release)
@@ -116,11 +122,13 @@ on:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v1
-    secrets: inherit
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
     with:
       environment_name: Production
       dotnet_folder: '.'
+    secrets:
+      NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
+      NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
 ```
 
 ## Verification
@@ -136,6 +144,6 @@ To verify the setup:
 Common issues and solutions:
 - If authentication fails, verify the federated credential configuration matches exactly
 - Ensure the managed identity has the necessary role assignments
-- Check that environment secrets are correctly set in GitHub
+- Check that environment variables are correctly set in GitHub
 - Verify the environment name in the workflow matches the federated credential configuration
 - Ensure that the resource is in the same subscription as the managed identity

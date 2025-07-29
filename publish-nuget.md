@@ -86,9 +86,11 @@ The workflow uses intelligent logic to determine the publishing target:
 - Repository owner: Automatically extracted from `${{ github.repository_owner }}`
 - Suitable for: Private packages within GitHub organizations
 
-## Example Usage Script
+## Example Usage Scripts
 
-This safely publishes push events to GitHub Packages and release events to NuGet.org (if `NUGET_AUTH_TOKEN` is available), otherwise to GitHub Packages:
+### 1. Publishing to GitHub Packages (example of private repository)
+
+This example publishes to GitHub Packages and includes NuGet.org credentials for accessing private packages during build:
 
 ```yaml
 name: Build and Publish
@@ -101,10 +103,36 @@ on:
 
 jobs:
   publish:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-nuget.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-nuget.yml@v2
     with:
       dotnet_folder: '.'
-    secrets: inherit
+    secrets:
+      NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
+      NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
+```
+
+> **Note**: The `NUGET_ORG_USER` and `NUGET_ORG_TOKEN` secrets allow the build process to access private NuGet packages from other sources during compilation, while the final package is published to GitHub Packages.
+
+### 2. Publishing to NuGet.org (example of public repository)
+
+This example publishes push events to GitHub Packages and release events to NuGet.org:
+
+```yaml
+name: Build and Publish
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-nuget.yml@v2
+    with:
+      dotnet_folder: '.'
+    secrets:
+      NUGET_AUTH_TOKEN: ${{ secrets.NUGET_AUTH_TOKEN }}
 ```
 
 ## NuGet Package Versioning

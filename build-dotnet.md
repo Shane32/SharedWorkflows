@@ -72,10 +72,12 @@ on:
 
 jobs:
   build:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@v2
     with:
       dotnet_folder: 'MyAppServer'
-    secrets: inherit
+    secrets:
+      NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
+      NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
 ```
 
 ### 2. Advanced Build Configuration
@@ -90,7 +92,7 @@ on:
 
 jobs:
   build:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@v2
     with:
       dotnet_folder: 'src/MyApp'
       global_json_folder: 'src'
@@ -115,11 +117,13 @@ on:
 
 jobs:
   build:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@v2
     with:
       dotnet_folder: '.'
       pack: true
-    secrets: inherit
+    secrets:
+      NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
+      NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
 ```
 
 ## NuGet Versioning

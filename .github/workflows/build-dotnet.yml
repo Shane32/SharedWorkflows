@@ -97,7 +97,7 @@ jobs:
 
       - name: Add NuGet Sources
         if: inputs.nuget_accounts != ''
-        uses: Shane32/SharedWorkflows/.github/actions/add-nuget-sources@1.0.0
+        uses: Shane32/SharedWorkflows/.github/actions/add-nuget-sources@2.0.0
         with:
           accounts: ${{ inputs.nuget_accounts }}
           username: ${{ secrets.NUGET_ORG_USER }}

@@ -67,36 +67,43 @@ on:
         required: true
         type: string
 
+      # Azure Credentials
+      azure_client_id:
+        description: 'Client ID for Azure deployment'
+        required: false
+        type: string
+      azure_tenant_id:
+        description: 'Tenant ID for Azure deployment'
+        required: false
+        type: string
+      azure_subscription_id:
+        description: 'Subscription ID for Azure deployment'
+        required: false
+        type: string
+
+      # Azure Resources
+      azure_storage_account:
+        description: 'Azure Storage account name for deployment'
+        required: false
+        type: string
+      azure_storage_container:
+        description: 'Azure Storage container name for deployment'
+        required: false
+        type: string
+      azure_webapp_name:
+        description: 'Azure Web App name for deployment'
+        required: false
+        type: string
+      azure_webapp_slot_name:
+        description: 'Azure Web App slot name for deployment'
+        required: false
+        type: string
+
     secrets:
       # NuGet Secrets
       NUGET_ORG_USER:
         required: false
       NUGET_ORG_TOKEN:
-        required: false
-      
-      # Azure Credentials
-      AZURE_CLIENT_ID:
-        description: 'Client ID for Azure deployment'
-        required: false
-      AZURE_TENANT_ID:
-        description: 'Tenant ID for Azure deployment'
-        required: false
-      AZURE_SUBSCRIPTION_ID:
-        description: 'Subscription ID for Azure deployment'
-        required: false
-
-      # Azure Resources
-      AZURE_STORAGE_ACCOUNT:
-        description: 'Azure Storage account name for deployment'
-        required: false
-      AZURE_STORAGE_CONTAINER:
-        description: 'Azure Storage container name for deployment'
-        required: false
-      AZURE_WEBAPP_NAME:
-        description: 'Azure Web App name for deployment'
-        required: false
-      AZURE_WEBAPP_SLOT_NAME:
-        description: 'Azure Web App slot name for deployment'
         required: false
 
 jobs:
@@ -110,11 +117,15 @@ jobs:
       has_webapp_name: ${{ steps.check_webapp_name.outputs.has_webapp_name }}
       has_storage_tokens: ${{ steps.check_storage_tokens.outputs.has_storage_tokens }}
     steps:
-      - name: Check Azure tokens are defined 
+      - name: Check Azure tokens are defined
         id: check_tokens
+        env:
+          AZURE_CLIENT_ID: ${{ inputs.azure_client_id || vars.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ inputs.azure_tenant_id || vars.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id || vars.AZURE_SUBSCRIPTION_ID }}
         shell: bash
         run: |
-          if [ -z "${{ secrets.AZURE_CLIENT_ID }}" ] || [ -z "${{ secrets.AZURE_TENANT_ID }}" ] || [ -z "${{ secrets.AZURE_SUBSCRIPTION_ID }}" ]; then
+          if [ -z "$AZURE_CLIENT_ID" ] || [ -z "$AZURE_TENANT_ID" ] || [ -z "$AZURE_SUBSCRIPTION_ID" ]; then
             echo "has_tokens=false" >> $GITHUB_OUTPUT
             echo "One or more Azure tokens are missing."
           else
@@ -122,10 +133,12 @@ jobs:
           fi
       - name: Check if Azure Web App name is defined
         id: check_webapp_name
+        env:
+          AZURE_WEBAPP_NAME: ${{ inputs.azure_webapp_name || vars.AZURE_WEBAPP_NAME }}
         shell: bash
         if: inputs.dotnet_folder
         run: |
-          if [ -z "${{ secrets.AZURE_WEBAPP_NAME }}" ]; then
+          if [ -z "$AZURE_WEBAPP_NAME" ]; then
             echo "has_webapp_name=false" >> $GITHUB_OUTPUT
             echo "Azure Web App name is missing."
           else
@@ -133,10 +146,13 @@ jobs:
           fi
       - name: Check if Azure Storage tokens are defined
         id: check_storage_tokens
+        env:
+          AZURE_STORAGE_ACCOUNT: ${{ inputs.azure_storage_account || vars.AZURE_STORAGE_ACCOUNT }}
+          AZURE_STORAGE_CONTAINER: ${{ inputs.azure_storage_container || vars.AZURE_STORAGE_CONTAINER }}
         shell: bash
         if: inputs.spa_folder && inputs.spa_deployment_method == 'azure-storage'
         run: |
-          if [ -z "${{ secrets.AZURE_STORAGE_ACCOUNT }}" ] || [ -z "${{ secrets.AZURE_STORAGE_CONTAINER }}" ]; then
+          if [ -z "$AZURE_STORAGE_ACCOUNT" ] || [ -z "$AZURE_STORAGE_CONTAINER" ]; then
             echo "has_storage_tokens=false" >> $GITHUB_OUTPUT
             echo "One or more Azure Storage tokens are missing."
           else
@@ -147,20 +163,22 @@ jobs:
     name: Build .NET Backend
     needs: check_azure_tokens
     if: inputs.dotnet_folder && needs.check_azure_tokens.outputs.has_tokens == 'true'
-    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@1.0.0
+    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@2.0.0
     with:
       dotnet_folder: ${{ inputs.dotnet_folder }}
       global_json_folder: ${{ inputs.global_json_folder }}
       nuget_accounts: ${{ inputs.nuget_accounts }}
       dotnet_configuration: ${{ inputs.dotnet_configuration }}
       environment_name: ${{ inputs.environment_name }}
-    secrets: inherit
+    secrets:
+      NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
+      NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
 
   build_spa:
     name: Build SPA
     needs: check_azure_tokens
     if: inputs.spa_folder && needs.check_azure_tokens.outputs.has_tokens == 'true'
-    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@1.0.0
+    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@2.0.0
     with:
       spa_folder: ${{ inputs.spa_folder }}
       spa_version_env: ${{ inputs.spa_version_env }}
@@ -175,30 +193,42 @@ jobs:
     name: Deploy to Azure Web App
     needs: [build_dotnet, check_azure_tokens]
     if: inputs.dotnet_folder && needs.check_azure_tokens.outputs.has_webapp_name && !inputs.spa_folder
-    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@1.0.0
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@2.0.0
     with:
       environment_name: ${{ inputs.environment_name }}
-    secrets: inherit
+      azure_client_id: ${{ inputs.azure_client_id }}
+      azure_tenant_id: ${{ inputs.azure_tenant_id }}
+      azure_subscription_id: ${{ inputs.azure_subscription_id }}
+      azure_webapp_name: ${{ inputs.azure_webapp_name }}
+      azure_webapp_slot_name: ${{ inputs.azure_webapp_slot_name }}
 
   deploy_webapp_combination:
     name: Deploy to Azure Web App
     needs: [build_dotnet, build_spa, check_azure_tokens]
     if: inputs.dotnet_folder && needs.check_azure_tokens.outputs.has_webapp_name && inputs.spa_folder
-    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@1.0.0
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@2.0.0
     with:
       spa_artifact: ${{ inputs.spa_deployment_method == 'azure-webapp' && '.spa-app' || '' }}
       persisted_documents_artifact: ${{ inputs.persisted_documents_file && 'persisted-documents' || '' }}
       environment_name: ${{ inputs.environment_name }}
-    secrets: inherit
+      azure_client_id: ${{ inputs.azure_client_id }}
+      azure_tenant_id: ${{ inputs.azure_tenant_id }}
+      azure_subscription_id: ${{ inputs.azure_subscription_id }}
+      azure_webapp_name: ${{ inputs.azure_webapp_name }}
+      azure_webapp_slot_name: ${{ inputs.azure_webapp_slot_name }}
 
   deploy_azurestorage:
     name: Deploy SPA to Azure Storage
     needs: [build_spa, check_azure_tokens]
     if: inputs.spa_folder && inputs.spa_deployment_method == 'azure-storage' && needs.check_azure_tokens.outputs.has_storage_tokens
-    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurestorage.yml@1.0.0
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurestorage.yml@2.0.0
     with:
       environment_name: ${{ inputs.environment_name }}
-    secrets: inherit
+      azure_client_id: ${{ inputs.azure_client_id }}
+      azure_tenant_id: ${{ inputs.azure_tenant_id }}
+      azure_subscription_id: ${{ inputs.azure_subscription_id }}
+      azure_storage_account: ${{ inputs.azure_storage_account }}
+      azure_storage_container: ${{ inputs.azure_storage_container }}
 
   dotnet_release_assets:
     name: Publish .NET Release Assets

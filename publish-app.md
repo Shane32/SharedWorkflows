@@ -58,16 +58,31 @@ The **Publish Application** workflow includes the following features:
 | `npm_analyze_script`       | NPM script to run after build for analysis                        | No           | None              |              |
 | `analysis_artifacts`       | Full path to files to upload as analysis artifacts (glob pattern) | No           | None              |              |
 
+### Azure Configuration Inputs
+
+| **Input Name**            | **Description**                                   | **Required** | **Default Value** |
+|---------------------------|---------------------------------------------------|--------------|-------------------|
+| `azure_client_id`         | Client ID for Azure deployment                    | No           | None              |
+| `azure_tenant_id`         | Tenant ID for Azure deployment                    | No           | None              |
+| `azure_subscription_id`   | Subscription ID for Azure deployment              | No           | None              |
+| `azure_webapp_name`       | Azure Web App name for deployment                 | No           | None              |
+| `azure_webapp_slot_name`  | Azure Web App slot name for deployment            | No           | None              |
+| `azure_storage_account`   | Azure Storage account name for deployment         | No           | None              |
+| `azure_storage_container` | Azure Storage container name for deployment       | No           | None              |
+
 ### Environment Variables
 
 If an environment is configured, variables configured for the specified environment are used as shell environment variables when building the code.
 
-### Secrets
+### Required Variables or Inputs
 
-| **Secret Name**           | **Description**                                   | **Required**                                | **Default Value** |
+The workflow requires the following Azure configuration values to be provided either as:
+
+- **Workflow inputs** (as shown in the table above), or
+- **Repository/Environment variables** with these names:
+
+| **Variable Name**         | **Description**                                   | **Required**                                | **Default Value** |
 |---------------------------|---------------------------------------------------|---------------------------------------------|-------------------|
-| `NUGET_ORG_USER`          | Username for private NuGet source (if applicable) | No                                          | None              |
-| `NUGET_ORG_TOKEN`         | Token for private NuGet source (if applicable)    | No                                          | None              |
 | `AZURE_CLIENT_ID`         | Client ID for Azure deployment                    | No (will skip deployment if not specified)  | None              |
 | `AZURE_TENANT_ID`         | Tenant ID for Azure deployment                    | No (will skip deployment if not specified)  | None              |
 | `AZURE_SUBSCRIPTION_ID`   | Subscription ID for Azure deployment              | No (will skip deployment if not specified)  | None              |
@@ -76,7 +91,14 @@ If an environment is configured, variables configured for the specified environm
 | `AZURE_STORAGE_ACCOUNT`   | Azure Storage account name for deployment (`azure-storage` method)   | Required if `deployment_method` is `azure-storage` | None         |
 | `AZURE_STORAGE_CONTAINER` | Azure Storage container name for deployment (`azure-storage` method) | Required if `deployment_method` is `azure-storage` | None         |
 
-:warning: To use environment-scoped secrets, you must use `secrets: inherit`. :warning:
+The workflow will first check for values provided as inputs, and if not found, will fall back to repository or environment variables. If neither is available, the workflow will skip deployment steps.
+
+### Secrets
+
+| **Secret Name**           | **Description**                                   | **Required** | **Default Value** |
+|---------------------------|---------------------------------------------------|--------------|-------------------|
+| `NUGET_ORG_USER`          | Username for private NuGet source (if applicable) | No           | None              |
+| `NUGET_ORG_TOKEN`         | Token for private NuGet source (if applicable)    | No           | None              |
 
 ## Example Usage Scripts
 
@@ -96,20 +118,16 @@ concurrency:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
     with:
       dotnet_folder: '.'
       environment_name: Development
     secrets:
-      AZURE_WEBAPP_NAME: my-dotnet-app
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_DEV_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_DEV_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_DEV_SUBSCRIPTION_ID }}
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
 ```
 
-The above example assumes that the necessary secrets are stored in the repository secrets.
+The above example assumes that the necessary Azure configuration values are stored as GitHub environment variables for the Development environment.
 
 ### 2. Deploy SPA to Azure Storage for development
 
@@ -127,20 +145,19 @@ concurrency:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
     with:
       spa_folder: ReactApp
       spa_deployment_method: azure-storage
       environment_name: Development
-    secrets:
-      AZURE_STORAGE_ACCOUNT: mystorageaccount
-      AZURE_STORAGE_CONTAINER: public
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_DEV_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_DEV_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_DEV_SUBSCRIPTION_ID }}
+      azure_storage_account: mystorageaccount
+      azure_storage_container: public
+      azure_client_id: ${{ secrets.AZURE_DEV_CLIENT_ID }}
+      azure_tenant_id: ${{ secrets.AZURE_DEV_TENANT_ID }}
+      azure_subscription_id: ${{ secrets.AZURE_DEV_SUBSCRIPTION_ID }}
 ```
 
-The above example assumes that the necessary secrets are stored in the repository secrets.
+The above example shows how to provide Azure configuration values as workflow inputs, pulling from repository secrets.
 
 ### 3. Deploy Full Application (Backend and SPA) to Azure Web App for production
 
@@ -154,16 +171,18 @@ on:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
     with:
       dotnet_folder: '.'
       spa_folder: ReactApp
       spa_deployment_method: azure-webapp
       environment_name: Production
-    secrets: inherit
+    secrets:
+      NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
+      NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
 ```
 
-The above example assumes that the necessary secrets are stored in GitHub's environment secrets.
+The above example assumes that the necessary Azure configuration values are stored as GitHub environment variables, and only passes the required NuGet secrets.
 
 ## Notes
 

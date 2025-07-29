@@ -30,10 +30,20 @@ The **Deploy Azure Web App** workflow includes the following features:
 | `artifact_name`                | Name of the .NET artifact to deploy                       | No           | `.net-app`        |
 | `spa_artifact`                 | Name of the SPA artifact to deploy in wwwroot folder      | No           | None              |
 | `persisted_documents_artifact` | Name of the persisted documents artifact to deploy        | No           | None              |
+| `azure_client_id`              | Client ID for Azure deployment                            | No           | None              |
+| `azure_tenant_id`              | Tenant ID for Azure deployment                            | No           | None              |
+| `azure_subscription_id`        | Subscription ID for Azure deployment                      | No           | None              |
+| `azure_webapp_name`            | Azure Web App name for deployment                         | No           | None              |
+| `azure_webapp_slot_name`       | Azure Web App slot name for deployment                    | No           | None              |
 
-### Required Secrets
+### Required Variables or Inputs
 
-| **Secret Name**          | **Description**                        | **Required** | **Default Value** |
+The workflow requires the following Azure configuration values to be provided either as:
+
+- **Workflow inputs** (as shown in the table above), or
+- **Repository/Environment variables** with these names:
+
+| **Variable Name**        | **Description**                        | **Required** | **Default Value** |
 |--------------------------|----------------------------------------|--------------|-------------------|
 | `AZURE_CLIENT_ID`        | Client ID for Azure deployment         | Yes          | None              |
 | `AZURE_TENANT_ID`        | Tenant ID for Azure deployment         | Yes          | None              |
@@ -41,7 +51,7 @@ The **Deploy Azure Web App** workflow includes the following features:
 | `AZURE_WEBAPP_NAME`      | Azure Web App name for deployment      | Yes          | None              |
 | `AZURE_WEBAPP_SLOT_NAME` | Azure Web App slot name for deployment | No           | `Production`      |
 
-:warning: To use environment-scoped secrets, you must use `secrets: inherit`. :warning:
+The workflow will first check for values provided as inputs, and if not found, will fall back to repository or environment variables. If neither is available, the workflow will fail with a validation error.
 
 ## Example Usage Scripts
 
@@ -57,13 +67,12 @@ on:
 
 jobs:
   deploy:
-    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@v2
     with:
       environment_name: Production
-    secrets: inherit
 ```
 
-The above example assumes that the necessary secrets are stored in GitHub's environment secrets.
+The above example assumes that the necessary Azure configuration values are stored as GitHub environment variables.
 
 ### 2. Deploy Full Stack Application to Staging Slot
 
@@ -77,21 +86,20 @@ on:
 
 jobs:
   deploy:
-    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@v2
     with:
       environment_name: Staging
       artifact_name: backend-build
       spa_artifact: frontend-build
       persisted_documents_artifact: persisted-docs
-    secrets:
-      AZURE_WEBAPP_NAME: my-production-app
-      AZURE_WEBAPP_SLOT_NAME: Staging
-      AZURE_CLIENT_ID: ${{ secrets.AZURE_STAGING_CLIENT_ID }}
-      AZURE_TENANT_ID: ${{ secrets.AZURE_STAGING_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_STAGING_SUBSCRIPTION_ID }}
+      azure_webapp_name: my-production-app
+      azure_webapp_slot_name: Staging
+      azure_client_id: ${{ secrets.AZURE_STAGING_CLIENT_ID }}
+      azure_tenant_id: ${{ secrets.AZURE_STAGING_TENANT_ID }}
+      azure_subscription_id: ${{ secrets.AZURE_STAGING_SUBSCRIPTION_ID }}
 ```
 
-The above example assumes that the necessary secrets are stored in the repository secrets.
+The above example shows how to provide Azure configuration values as workflow inputs, pulling from repository secrets.
 
 ## Notes
 
