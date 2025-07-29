@@ -86,11 +86,14 @@ concurrency:
 
 jobs:
   build-check:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v2
     with:
       dotnet_folder: '.'
       dotnet_build_runner: 'windows-latest'
-    secrets: inherit
+    secrets:
+      NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
+      NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 ```
 
 ### 2. Build Workflow Skipping Formatting Checks
@@ -106,10 +109,13 @@ on:
 
 jobs:
   build-check:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v2
     with:
       dotnet_folder: '.'
-    secrets: inherit
+    secrets:
+      NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
+      NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 ```
 
 ### 3. PR Workflow for .NET and SPA with Analysis
@@ -128,13 +134,16 @@ concurrency:
 
 jobs:
   build-check:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v2
     with:
       dotnet_folder: '.'
       spa_folder: 'ReactApp'
       npm_analyze_script: 'analyze'
       analysis_artifacts: 'ReactApp/stats.html'
-    secrets: inherit
+    secrets:
+      NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
+      NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 ```
 
 ## Notes
