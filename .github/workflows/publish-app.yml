@@ -235,6 +235,8 @@ jobs:
     needs: [build_dotnet]
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download .NET artifact
         uses: actions/download-artifact@v4
@@ -269,6 +271,8 @@ jobs:
     needs: [build_spa]
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download SPA artifact
         uses: actions/download-artifact@v4
@@ -303,6 +307,8 @@ jobs:
     needs: [build_spa]
     if: github.event_name == 'release' && inputs.analysis_artifacts
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download SPA analysis artifact
         uses: actions/download-artifact@v4
@@ -337,6 +343,8 @@ jobs:
     needs: [build_spa]
     if: github.event_name == 'release' && inputs.persisted_documents_file
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download SPA persisted-documents artifact
         uses: actions/download-artifact@v4
