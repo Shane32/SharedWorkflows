@@ -58,6 +58,8 @@ jobs:
   build_spa:
     name: Build SPA
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     environment:
         name: ${{ inputs.environment_name }}
     steps:

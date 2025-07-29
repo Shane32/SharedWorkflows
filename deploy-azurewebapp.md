@@ -68,6 +68,9 @@ on:
 jobs:
   deploy:
     uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@v2
+    permissions:
+      contents: read
+      id-token: write
     with:
       environment_name: Production
 ```
@@ -87,6 +90,9 @@ on:
 jobs:
   deploy:
     uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@v2
+    permissions:
+      contents: read
+      id-token: write
     with:
       environment_name: Staging
       artifact_name: backend-build
@@ -104,6 +110,7 @@ The above example shows how to provide Azure configuration values as workflow in
 ## Notes
 
 - The workflow uses OIDC (OpenID Connect) for secure authentication with Azure
+- The `permissions: id-token: write` is required for Azure deployment workflows to enable OIDC authentication with Azure.
 - SPA artifacts are automatically deployed to the wwwroot folder when specified
 - Perisisted document artifacts are automatically deployed to the root folder when specified
 - All artifacts must be previously created and available in the workflow run

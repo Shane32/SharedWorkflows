@@ -53,6 +53,8 @@ jobs:
   build:
     name: Build .NET
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     environment:
       name: ${{ inputs.environment_name }}
     outputs:

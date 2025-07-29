@@ -102,6 +102,9 @@ concurrency:
 jobs:
   publish-application:
     uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    permissions:
+      contents: read
+      id-token: write
     with:
       environment_name: Development
       dotnet_folder: '.'
@@ -123,6 +126,9 @@ on:
 jobs:
   publish-application:
     uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    permissions:
+      contents: read
+      id-token: write
     with:
       environment_name: Production
       dotnet_folder: '.'
@@ -130,6 +136,8 @@ jobs:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
 ```
+
+> **Note**: The `permissions: id-token: write` is required for Azure deployment workflows to enable OIDC authentication with Azure.
 
 ## Verification
 

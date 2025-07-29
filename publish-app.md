@@ -119,6 +119,9 @@ concurrency:
 jobs:
   publish-application:
     uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    permissions:
+      contents: read
+      id-token: write
     with:
       dotnet_folder: '.'
       environment_name: Development
@@ -146,6 +149,9 @@ concurrency:
 jobs:
   publish-application:
     uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    permissions:
+      contents: read
+      id-token: write
     with:
       spa_folder: ReactApp
       spa_deployment_method: azure-storage
@@ -172,6 +178,9 @@ on:
 jobs:
   publish-application:
     uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    permissions:
+      contents: read
+      id-token: write
     with:
       dotnet_folder: '.'
       spa_folder: ReactApp
@@ -186,6 +195,7 @@ The above example assumes that the necessary Azure configuration values are stor
 
 ## Notes
 
+- The `permissions: id-token: write` is required for Azure deployment workflows to enable OIDC authentication with Azure.
 - `NUGET_ORG_USER` and `NUGET_ORG_TOKEN` should already be configured as organization secrets but need to be passed in.
 - `global.json` is required
 - Cannot override .NET SDK with another version or install multiple SDKs
