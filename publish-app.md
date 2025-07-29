@@ -120,7 +120,7 @@ jobs:
   publish-application:
     uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
     permissions:
-      contents: read
+      contents: write
       id-token: write
     with:
       dotnet_folder: '.'
@@ -150,7 +150,7 @@ jobs:
   publish-application:
     uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
     permissions:
-      contents: read
+      contents: write
       id-token: write
     with:
       spa_folder: ReactApp
@@ -179,7 +179,7 @@ jobs:
   publish-application:
     uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
     permissions:
-      contents: read
+      contents: write
       id-token: write
     with:
       dotnet_folder: '.'
@@ -199,3 +199,4 @@ The above example assumes that the necessary Azure configuration values are stor
 - `NUGET_ORG_USER` and `NUGET_ORG_TOKEN` should already be configured as organization secrets but need to be passed in.
 - `global.json` is required
 - Cannot override .NET SDK with another version or install multiple SDKs
+- `permissions: contents: write` is necessary to upload the compiled application as a release asset

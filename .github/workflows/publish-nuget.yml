@@ -136,3 +136,40 @@ jobs:
         run: |
           echo "Publishing to: ${{ steps.nuget_config.outputs.target }}"
           dotnet nuget push "packages/*.nupkg" -k ${{ steps.nuget_config.outputs.auth_token }} --skip-duplicate
+
+  release_assets:
+    name: Publish .NET Release Assets
+    needs: build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download .NET artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: '.net-app'
+          path: packages
+      - name: Zip files together
+        working-directory: packages
+        run: zip -r ../nuget-packages.zip .
+      - name: Upload nuget-packages.zip as Release Asset
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const fileData = fs.readFileSync(path.join(process.cwd(), 'nuget-packages.zip'));
+            const uploadResult = await github.rest.repos.uploadReleaseAsset({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: context.payload.release.id,
+              name: 'nuget-packages.zip',
+              data: fileData,
+              headers: {
+                'content-type': 'application/zip',
+                'content-length': fileData.length,
+              },
+            });
+  
