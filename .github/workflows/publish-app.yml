@@ -18,6 +18,11 @@ on:
         required: false
         type: string
         default: 'default'
+      npm_accounts:
+        description: 'Comma-separated list of GitHub accounts to add as NPM sources.'
+        required: false
+        type: string
+        default: 'default'
       dotnet_configuration:
         description: '.NET configuration'
         required: false
@@ -105,6 +110,9 @@ on:
         required: false
       NUGET_ORG_TOKEN:
         required: false
+      # NPM Secrets
+      NPM_TOKEN:
+        required: false
 
 jobs:
   check_azure_tokens:
@@ -178,7 +186,7 @@ jobs:
     name: Build SPA
     needs: check_azure_tokens
     if: inputs.spa_folder && needs.check_azure_tokens.outputs.has_tokens == 'true'
-    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@2.0.0
+    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@2.2.0
     with:
       spa_folder: ${{ inputs.spa_folder }}
       spa_version_env: ${{ inputs.spa_version_env }}
@@ -188,6 +196,9 @@ jobs:
       environment_name: ${{ inputs.environment_name }}
       npm_analyze_script: ${{ inputs.npm_analyze_script }}
       analysis_files: ${{ inputs.analysis_artifacts }}
+      npm_accounts: ${{ inputs.npm_accounts }}
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   deploy_webapp_netonly:
     name: Deploy to Azure Web App

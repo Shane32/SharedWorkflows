@@ -22,5 +22,5 @@ Before using the deployment workflows, you'll need to configure the necessary Az
 1. Make required changes and update readme files, being sure to update version number in all samples if the major version is changing
 2. Issue release, bumping major version number for breaking changes
 3. Adjust/create 'v#' tag to point to new #.x.x release
-4. If updating the `add-nuget-sources` workflow, update references to it within the other workflows to use the new version number
+4. If updating the `add-nuget-sources` or `add-npm-sources` workflows, update references to them within the other workflows to use the new version number
 5. If updating the `build-spa`, `build-dotnet`, `deploy-azurewebapp` or `deploy-azurestorage` workflows, update references to them in the `publish-app` workflow to use the new version number

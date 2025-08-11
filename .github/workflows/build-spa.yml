@@ -53,6 +53,15 @@ on:
         required: false
         type: string
         default: 'analysis'
+      npm_accounts:
+        description: 'Comma-separated list of GitHub accounts to add as NPM sources.'
+        required: false
+        type: string
+        default: 'default'
+
+    secrets:
+      NPM_TOKEN:
+        required: false
 
 jobs:
   build_spa:
@@ -91,6 +100,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ${{ inputs.spa_folder }}/package.json
+
+      - name: Add NPM Sources
+        if: inputs.npm_accounts != ''
+        uses: Shane32/SharedWorkflows/.github/actions/add-npm-sources@2.1.0
+        with:
+          accounts: ${{ inputs.npm_accounts }}
+          token: ${{ secrets.NPM_TOKEN }}
+          folder: ${{ inputs.spa_folder }}
 
       - name: Install SPA dependencies
         run: npm ci

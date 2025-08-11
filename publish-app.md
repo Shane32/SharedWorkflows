@@ -43,6 +43,7 @@ The **Publish Application** workflow includes the following features:
 | `dotnet_folder`        | Path to the .NET project folder                           | No           | None                 | Omitting skips .NET-related steps |
 | `global_json_folder`   | Path to the folder containing `global.json`               | No           | `.`                  | Ignores `dotnet_folder` when resolving path |
 | `nuget_accounts`       | Comma-separated list of GitHub accounts for NuGet sources | No           | Repository owner     | Skipped if tokens are not provided |
+| `npm_accounts`         | Comma-separated list of GitHub accounts for NPM sources   | No           | Repository owner     | Skipped if tokens are not provided |
 | `dotnet_configuration` | .NET build configuration (e.g., `Release`, `Debug`)       | No           | `Release`            |              |
 
 ### SPA Build Inputs
@@ -95,10 +96,11 @@ The workflow will first check for values provided as inputs, and if not found, w
 
 ### Secrets
 
-| **Secret Name**           | **Description**                                   | **Required** | **Default Value** |
-|---------------------------|---------------------------------------------------|--------------|-------------------|
-| `NUGET_ORG_USER`          | Username for private NuGet source (if applicable) | No           | None              |
-| `NUGET_ORG_TOKEN`         | Token for private NuGet source (if applicable)    | No           | None              |
+| **Secret Name**           | **Description**                                       | **Required** | **Default Value** |
+|---------------------------|-------------------------------------------------------|--------------|-------------------|
+| `NUGET_ORG_USER`          | Username for private NuGet source (if applicable)     | No           | None              |
+| `NUGET_ORG_TOKEN`         | Token for private NuGet source (if applicable)        | No           | None              |
+| `NPM_TOKEN`               | GitHub Personal Access Token for private npm packages | No           | None              |
 
 ## Example Usage Scripts
 
@@ -189,6 +191,7 @@ jobs:
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
 
 The above example assumes that the necessary Azure configuration values are stored as GitHub environment variables, and only passes the required NuGet secrets.
@@ -196,7 +199,7 @@ The above example assumes that the necessary Azure configuration values are stor
 ## Notes
 
 - The `permissions: id-token: write` is required for Azure deployment workflows to enable OIDC authentication with Azure.
-- `NUGET_ORG_USER` and `NUGET_ORG_TOKEN` should already be configured as organization secrets but need to be passed in.
+- `NUGET_ORG_USER`, `NUGET_ORG_TOKEN`, and `NPM_TOKEN` should already be configured as organization secrets but need to be passed in.
 - `global.json` is required
 - Cannot override .NET SDK with another version or install multiple SDKs
 - `permissions: contents: write` is necessary to upload the compiled application as a release asset
