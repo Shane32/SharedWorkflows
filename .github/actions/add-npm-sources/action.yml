@@ -1,0 +1,52 @@
+name: 'Add NPM Sources'
+description: 'Creates a .npmrc file with GitHub package registry configurations based on provided GitHub account names.'
+
+inputs:
+  accounts:
+    description: 'Comma-separated list of GitHub account names to add as NPM sources.'
+    required: true
+    type: string
+  token:
+    description: 'GitHub Personal Access Token for accessing npm packages.'
+    required: true
+    type: string
+  folder:
+    description: 'Folder path where the .npmrc file should be created (relative to workspace root).'
+    required: false
+    type: string
+    default: '.'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Create .npmrc file
+      if: inputs.token != '' && inputs.accounts != ''
+      shell: bash
+      run: |
+        ACCOUNTS_INPUT="${{ inputs.accounts }}"
+        TOKEN="${{ inputs.token }}"
+        FOLDER="${{ inputs.folder }}"
+        
+        # Replace 'default' with the repository owner
+        if [ "$ACCOUNTS_INPUT" = "default" ]; then
+          ACCOUNTS_INPUT="${{ github.repository_owner }}"
+        fi
+        
+        # Create or overwrite .npmrc file
+        NPMRC_FILE="$FOLDER/.npmrc"
+        echo "Creating .npmrc file at: $NPMRC_FILE"
+        
+        # Start with GitHub registry configuration
+        echo "# GitHub Package Registry configuration" > "$NPMRC_FILE"
+        echo "//npm.pkg.github.com/:_authToken=$TOKEN" >> "$NPMRC_FILE"
+        
+        # Add registry configurations for each account
+        IFS=',' read -ra ACCOUNTS <<< "$ACCOUNTS_INPUT"
+        for ACCOUNT in "${ACCOUNTS[@]}"; do
+          ACCOUNT=$(echo "$ACCOUNT" | xargs)  # Trim whitespace
+          echo "Adding npm registry for account: $ACCOUNT"
+          echo "@$ACCOUNT:registry=https://npm.pkg.github.com" >> "$NPMRC_FILE"
+        done
+        
+        echo "Successfully created .npmrc file with the following content:"
+        cat "$NPMRC_FILE"
