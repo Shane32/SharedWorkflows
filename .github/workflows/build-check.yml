@@ -76,6 +76,11 @@ on:
         required: false
         type: string
         default: 'default'
+      npm_accounts:
+        description: 'Comma-separated list of GitHub accounts to add as NPM sources.'
+        required: false
+        type: string
+        default: 'default'
       coverage_report:
         description: 'Enable or disable coverage reports'
         required: false
@@ -103,6 +108,8 @@ on:
       NUGET_ORG_USER:
         required: false
       NUGET_ORG_TOKEN:
+        required: false
+      NPM_TOKEN:
         required: false
       CODECOV_TOKEN:
         required: false
@@ -301,6 +308,14 @@ jobs:
         with:
           node-version-file: ${{ inputs.spa_folder }}/package.json
 
+      - name: Add NPM Sources
+        if: inputs.npm_accounts != ''
+        uses: Shane32/SharedWorkflows/.github/actions/add-npm-sources@2.1.0
+        with:
+          accounts: ${{ inputs.npm_accounts }}
+          token: ${{ secrets.NPM_TOKEN }}
+          folder: ${{ inputs.spa_folder }}
+
       - name: Install Dependencies
         run: npm ci
         working-directory: ${{ inputs.spa_folder }}
@@ -373,6 +388,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ${{ inputs.spa_folder }}/package.json
+
+      - name: Add NPM Sources
+        if: inputs.npm_accounts != ''
+        uses: Shane32/SharedWorkflows/.github/actions/add-npm-sources@2.1.0
+        with:
+          accounts: ${{ inputs.npm_accounts }}
+          token: ${{ secrets.NPM_TOKEN }}
+          folder: ${{ inputs.spa_folder }}
 
       - name: Install Dependencies
         run: npm ci

@@ -5,6 +5,7 @@ This reusable GitHub Actions workflow is designed to streamline building, testin
 ## Functionality Summary
 
 The `Build Check` workflow includes:
+
 - **.NET Support:**
   - Builds and tests .NET projects and/or solutions.
   - Executes tests with optional test settings and generates code coverage reports.
@@ -41,6 +42,7 @@ The `Build Check` workflow includes:
 | `dotnet_format_severity`| .NET format severity level                | No           | `error`                 | Controls formatting validation severity        |
 | `global_json_folder`    | Path to the folder containing global.json | No           | `.`                     | Ignores `dotnet_folder` when resolving path    |
 | `nuget_accounts`        | NuGet Accounts to configure               | No           | Repository owner        | Skipped if tokens are not provided             |
+| `npm_accounts`          | NPM Accounts to configure                 | No           | Repository owner        | Skipped if tokens are not provided             |
 | `dotnet_test_settings`  | .NET test settings XML file location      | No           | `testsettings.xml`      | Only used if file exists                       |
 | `data_collector`        | Data collector for dotnet test            | No           | `XPlat Code Coverage`   | If blank then setting is not applied           |
 | `coveralls`             | Enable Coveralls support                  | No           | `false`                 |                                                |
@@ -66,6 +68,7 @@ The workflow supports the following secrets, which are optional but enhance func
 
 - `NUGET_ORG_USER`: NuGet user for private repositories.
 - `NUGET_ORG_TOKEN`: NuGet token for private repositories.
+- `NPM_TOKEN`: GitHub Personal Access Token for accessing private npm packages.
 - `CODECOV_TOKEN`: Token for uploading code coverage to Codecov.
 
 ## Example Usage Scripts
@@ -143,6 +146,7 @@ jobs:
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 ```
 

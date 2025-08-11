@@ -48,6 +48,13 @@ The **Build SPA** workflow includes the following features:
 | `npm_analyze_script`          | NPM analyze script to run after build                             | No           | None                  |              |
 | `analysis_files`              | Full path to files to upload as analysis artifacts (glob pattern) | No           | None                  |              |
 | `analysis_artifact`           | Name of the analysis artifact to upload                           | No           | `analysis`            |              |
+| `npm_accounts`                | Comma-separated list of GitHub accounts to add as NPM sources     | No           | Repository owner      | Skipped if tokens are not provided |
+
+### Secrets
+
+The workflow supports the following secrets, which are optional but enhance functionality:
+
+- `NPM_TOKEN`: GitHub Personal Access Token for accessing private npm packages.
 
 ### Environment Variables
 
@@ -92,6 +99,8 @@ jobs:
       npm_dist_folder: 'build'
       artifact_name: 'spa-production-build'
       environment_name: 'Development'
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
 
 ### 3. Build with Persisted Documents
