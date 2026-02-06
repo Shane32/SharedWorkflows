@@ -9,7 +9,9 @@ See each workflow's respective readme for more details:
 - [Publish NuGet Package workflow for building and publishing NuGet packages](publish-nuget.md)
 - [Deploy Azure Web App workflow for web application deployments](deploy-azurewebapp.md)
 - [Deploy Azure Storage workflow for static content deployments](deploy-azurestorage.md)
+- [Deploy with MSDeploy workflow for deploying to IIS servers](deploy-msdeploy.md)
 - [Combination Build and Deploy Application workflow for both .NET and SPA code](publish-app.md)
+- [Publish Application with MSDeploy workflow for building and deploying .NET/SPA to IIS](publish-app-msbuild.md)
 
 ## Azure Permissions Setup
 
