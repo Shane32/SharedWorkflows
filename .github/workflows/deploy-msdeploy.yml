@@ -32,15 +32,16 @@ on:
         description: 'Username for MSDeploy authentication'
         required: false
         type: string
-      msdeploy_password:
-        description: 'Password for MSDeploy authentication'
-        required: false
-        type: string
       msdeploy_allow_untrusted:
         description: 'Allow untrusted SSL certificates'
         required: false
         type: boolean
         default: false
+
+    secrets:
+      msdeploy_password:
+        description: 'Password for MSDeploy authentication'
+        required: false
 
 jobs:
   deploy_msdeploy:
@@ -54,7 +55,7 @@ jobs:
           MSDEPLOY_SERVER_URL: ${{ inputs.msdeploy_server_url || vars.MSDEPLOY_SERVER_URL }}
           MSDEPLOY_SITE_NAME: ${{ inputs.msdeploy_site_name || vars.MSDEPLOY_SITE_NAME }}
           MSDEPLOY_USERNAME: ${{ inputs.msdeploy_username || vars.MSDEPLOY_USERNAME }}
-          MSDEPLOY_PASSWORD: ${{ inputs.msdeploy_password || vars.MSDEPLOY_PASSWORD }}
+          MSDEPLOY_PASSWORD: ${{ secrets.msdeploy_password || vars.MSDEPLOY_PASSWORD }}
         shell: pwsh
         run: |
           $MISSING_VARS = @()
@@ -108,7 +109,7 @@ jobs:
           MSDEPLOY_SERVER_URL: ${{ inputs.msdeploy_server_url || vars.MSDEPLOY_SERVER_URL }}
           MSDEPLOY_SITE_NAME: ${{ inputs.msdeploy_site_name || vars.MSDEPLOY_SITE_NAME }}
           MSDEPLOY_USERNAME: ${{ inputs.msdeploy_username || vars.MSDEPLOY_USERNAME }}
-          MSDEPLOY_PASSWORD: ${{ inputs.msdeploy_password || vars.MSDEPLOY_PASSWORD }}
+          MSDEPLOY_PASSWORD: ${{ secrets.msdeploy_password || vars.MSDEPLOY_PASSWORD }}
           MSDEPLOY_ALLOW_UNTRUSTED: ${{ inputs.msdeploy_allow_untrusted }}
         shell: pwsh
         run: |

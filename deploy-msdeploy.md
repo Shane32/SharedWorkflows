@@ -26,24 +26,24 @@ The **Deploy with MSDeploy** workflow includes the following features:
 
 ### Workflow Inputs
 
-| **Input Name**                 | **Description**                                           | **Required** | **Default Value** |
-|--------------------------------|-----------------------------------------------------------|--------------|-------------------|
-| `environment_name`             | Environment name for deployment                           | Yes          | None              |
-| `artifact_name`                | Name of the artifact to deploy to the root of the site    | No           | `.net-app`        |
+| **Input Name**                 | **Description**                                            | **Required** | **Default Value** |
+|--------------------------------|------------------------------------------------------------|--------------|-------------------|
+| `environment_name`             | Environment name for deployment                            | Yes          | None              |
+| `artifact_name`                | Name of the artifact to deploy to the root of the site     | No           | `.net-app`        |
 | `spa_artifact`                 | Name of the SPA artifact to deploy to wwwroot subfolder (for combined .NET+SPA) | No | None |
-| `persisted_documents_artifact` | Name of the persisted documents artifact to deploy to root | No          | None              |
-| `msdeploy_server_url`          | MSDeploy server URL for deployment                        | No           | None              |
-| `msdeploy_site_name`           | IIS site name for deployment                              | No           | None              |
-| `msdeploy_username`            | Username for MSDeploy authentication                      | No           | None              |
-| `msdeploy_password`            | Password for MSDeploy authentication                      | No           | None              |
-| `msdeploy_allow_untrusted`     | Allow untrusted SSL certificates                          | No           | `false`           |
+| `persisted_documents_artifact` | Name of the persisted documents artifact to deploy to root | No           | None              |
+| `msdeploy_server_url`          | MSDeploy server URL for deployment                         | No           | None              |
+| `msdeploy_site_name`           | IIS site name for deployment                               | No           | None              |
+| `msdeploy_username`            | Username for MSDeploy authentication                       | No           | None              |
+| `msdeploy_allow_untrusted`     | Allow untrusted SSL certificates                           | No           | `false`           |
 
-### Required Variables or Inputs
+### Required Variables, Inputs, or Secrets
 
 The workflow requires the following MSDeploy configuration values to be provided either as:
 
-- **Workflow inputs** (as shown in the table above), or
-- **Repository/Environment variables** with these names:
+- **Workflow inputs** (as shown in the table above)
+- **Repository/Environment variables** with these names
+- **Secrets** (for sensitive values like passwords)
 
 | **Variable Name**       | **Description**                        | **Required** | **Default Value** |
 |-------------------------|----------------------------------------|--------------|-------------------|
@@ -52,7 +52,13 @@ The workflow requires the following MSDeploy configuration values to be provided
 | `MSDEPLOY_USERNAME`     | Username for MSDeploy authentication   | Yes          | None              |
 | `MSDEPLOY_PASSWORD`     | Password for MSDeploy authentication   | Yes          | None              |
 
-The workflow will first check for values provided as inputs, and if not found, will fall back to repository or environment variables. If neither is available, the workflow will fail with a validation error.
+The workflow will first check for values provided as inputs or secrets, and if not found, will fall back to repository or environment variables. If neither is available, the workflow will fail with a validation error.
+
+### Secrets
+
+| **Secret Name**           | **Description**                                       | **Required** | **Default Value** |
+|---------------------------|-------------------------------------------------------|--------------|-------------------|
+| `msdeploy_password`       | Password for MSDeploy authentication                  | No           | None              |
 
 ## Example Usage Scripts
 
@@ -100,11 +106,12 @@ jobs:
       msdeploy_server_url: https://staging-server.example.com:8172/msdeploy.axd
       msdeploy_site_name: StagingSite
       msdeploy_username: deploy-user
-      msdeploy_password: ${{ secrets.MSDEPLOY_STAGING_PASSWORD }}
       msdeploy_allow_untrusted: true
+    secrets:
+      msdeploy_password: ${{ secrets.MSDEPLOY_STAGING_PASSWORD }}
 ```
 
-The above example shows how to provide MSDeploy configuration values as workflow inputs, pulling from repository secrets for the password.
+The above example shows how to provide MSDeploy configuration values as workflow inputs, with the password passed as a secret.
 
 ### 3. Deploy with Custom Artifact Names
 
@@ -123,6 +130,8 @@ jobs:
       environment_name: Development
       artifact_name: api-artifact
       spa_artifact: web-ui-artifact
+    secrets:
+      msdeploy_password: ${{ secrets.MSDEPLOY_PASSWORD }}
 ```
 
 ## Notes
