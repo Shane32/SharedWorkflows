@@ -26,16 +26,16 @@ The **Deploy with MSDeploy** workflow includes the following features:
 
 ### Workflow Inputs
 
-| **Input Name**                 | **Description**                                           | **Required** | **Default Value** |
-|--------------------------------|-----------------------------------------------------------|--------------|-------------------|
-| `environment_name`             | Environment name for deployment                           | Yes          | None              |
-| `artifact_name`                | Name of the artifact to deploy to the root of the site    | No           | `.net-app`        |
+| **Input Name**                 | **Description**                                            | **Required** | **Default Value** |
+|--------------------------------|------------------------------------------------------------|--------------|-------------------|
+| `environment_name`             | Environment name for deployment                            | Yes          | None              |
+| `artifact_name`                | Name of the artifact to deploy to the root of the site     | No           | `.net-app`        |
 | `spa_artifact`                 | Name of the SPA artifact to deploy to wwwroot subfolder (for combined .NET+SPA) | No | None |
-| `persisted_documents_artifact` | Name of the persisted documents artifact to deploy to root | No          | None              |
-| `msdeploy_server_url`          | MSDeploy server URL for deployment                        | No           | None              |
-| `msdeploy_site_name`           | IIS site name for deployment                              | No           | None              |
-| `msdeploy_username`         | Username for MSDeploy authentication      | No           | None              |
-| `msdeploy_allow_untrusted`  | Allow untrusted SSL certificates          | No           | `false`           |
+| `persisted_documents_artifact` | Name of the persisted documents artifact to deploy to root | No           | None              |
+| `msdeploy_server_url`          | MSDeploy server URL for deployment                         | No           | None              |
+| `msdeploy_site_name`           | IIS site name for deployment                               | No           | None              |
+| `msdeploy_username`            | Username for MSDeploy authentication                       | No           | None              |
+| `msdeploy_allow_untrusted`     | Allow untrusted SSL certificates                           | No           | `false`           |
 
 ### Required Variables, Inputs, or Secrets
 
