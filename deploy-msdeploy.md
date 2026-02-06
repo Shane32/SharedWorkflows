@@ -154,13 +154,14 @@ jobs:
 The MSDeploy server URL typically follows this format:
 
 ```text
-https://server-name:8172/msdeploy.axd
+https://server-name:8172/msdeploy.axd?site=site-name
 ```
 
 Where:
 - `server-name` is your IIS server hostname or IP address
 - `8172` is the default MSDeploy port (may vary based on your configuration)
 - `/msdeploy.axd` is the MSDeploy handler endpoint
+- `site-name` is the site name (e.g. `Default Web Site`) and does not include the application name, if any
 
 ## IIS Site Name
 

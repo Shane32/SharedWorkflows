@@ -207,19 +207,20 @@ The above example assumes that the necessary MSDeploy configuration values are s
 
 The MSDeploy server URL typically follows this format:
 
-```
-https://server-name:8172/msdeploy.axd
+```text
+https://server-name:8172/msdeploy.axd?site=site-name
 ```
 
 Where:
 - `server-name` is your IIS server hostname or IP address
 - `8172` is the default MSDeploy port (may vary based on your configuration)
 - `/msdeploy.axd` is the MSDeploy handler endpoint
+- `site-name` is the site name (e.g. `Default Web Site`) and does not include the application name, if any
 
 ## IIS Site Name
 
 The IIS site name should match the exact name of the website or application in IIS where you want to deploy. For deploying to a specific application within a site, use the format:
 
-```
+```text
 SiteName/ApplicationName
 ```
