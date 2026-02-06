@@ -86,7 +86,7 @@ jobs:
           echo "✅ All required variables are provided"
 
       - name: Download SPA artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ${{ inputs.artifact_name }}
 

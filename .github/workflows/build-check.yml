@@ -121,16 +121,16 @@ jobs:
     if: inputs.build && inputs.dotnet_folder
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           global-json-file: ${{ inputs.global_json_folder }}/global.json
 
       - name: Add NuGet Sources
         if: inputs.nuget_accounts != ''
-        uses: Shane32/SharedWorkflows/.github/actions/add-nuget-sources@2.0.0
+        uses: Shane32/SharedWorkflows/.github/actions/add-nuget-sources@2.3.0
         with:
           accounts: ${{ inputs.nuget_accounts }}
           username: ${{ secrets.NUGET_ORG_USER }}
@@ -274,7 +274,7 @@ jobs:
 
       - name: Upload artifacts
         if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Code Coverage Artifacts
           path: |
@@ -301,16 +301,16 @@ jobs:
     if: inputs.build && inputs.spa_folder
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ${{ inputs.spa_folder }}/package.json
 
       - name: Add NPM Sources
         if: inputs.npm_accounts != ''
-        uses: Shane32/SharedWorkflows/.github/actions/add-npm-sources@2.1.0
+        uses: Shane32/SharedWorkflows/.github/actions/add-npm-sources@2.3.0
         with:
           accounts: ${{ inputs.npm_accounts }}
           token: ${{ secrets.NPM_TOKEN }}
@@ -331,7 +331,7 @@ jobs:
 
       - name: Upload analysis artifacts
         if: inputs.analysis_artifacts != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Analysis Artifacts
           path: ${{ inputs.analysis_artifacts }}
@@ -349,16 +349,16 @@ jobs:
     if: (inputs.format == 'true' || (inputs.format == '' && github.event_name == 'pull_request')) && inputs.dotnet_folder
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           global-json-file: ${{ inputs.global_json_folder }}/global.json
 
       - name: Add NuGet Sources
         if: inputs.nuget_accounts != ''
-        uses: Shane32/SharedWorkflows/.github/actions/add-nuget-sources@2.0.0
+        uses: Shane32/SharedWorkflows/.github/actions/add-nuget-sources@2.3.0
         with:
           accounts: ${{ inputs.nuget_accounts }}
           username: ${{ secrets.NUGET_ORG_USER }}
@@ -382,16 +382,16 @@ jobs:
     if: (inputs.format == 'true' || (inputs.format == '' && github.event_name == 'pull_request')) && inputs.spa_folder
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ${{ inputs.spa_folder }}/package.json
 
       - name: Add NPM Sources
         if: inputs.npm_accounts != ''
-        uses: Shane32/SharedWorkflows/.github/actions/add-npm-sources@2.1.0
+        uses: Shane32/SharedWorkflows/.github/actions/add-npm-sources@2.3.0
         with:
           accounts: ${{ inputs.npm_accounts }}
           token: ${{ secrets.NPM_TOKEN }}

@@ -1,4 +1,4 @@
-name: Publish Application
+name: Publish Application with MSDeploy
 
 on:
   workflow_call:
@@ -63,46 +63,33 @@ on:
         type: string
       
       # Deployment Inputs
-      spa_deployment_method:
-        description: 'Method to deploy SPA: "azure-webapp" or "azure-storage"'
-        required: false
-        type: string
       environment_name:
         description: 'Environment name for deployment'
         required: true
         type: string
 
-      # Azure Credentials
-      azure_client_id:
-        description: 'Client ID for Azure deployment'
+      # MSDeploy Configuration
+      msdeploy_server_url:
+        description: 'MSDeploy server URL for deployment'
         required: false
         type: string
-      azure_tenant_id:
-        description: 'Tenant ID for Azure deployment'
+      msdeploy_site_name:
+        description: 'IIS site name for deployment'
         required: false
         type: string
-      azure_subscription_id:
-        description: 'Subscription ID for Azure deployment'
+      msdeploy_username:
+        description: 'Username for MSDeploy authentication'
         required: false
         type: string
-
-      # Azure Resources
-      azure_storage_account:
-        description: 'Azure Storage account name for deployment'
+      msdeploy_password:
+        description: 'Password for MSDeploy authentication'
         required: false
         type: string
-      azure_storage_container:
-        description: 'Azure Storage container name for deployment'
+      msdeploy_allow_untrusted:
+        description: 'Allow untrusted SSL certificates'
         required: false
-        type: string
-      azure_webapp_name:
-        description: 'Azure Web App name for deployment'
-        required: false
-        type: string
-      azure_webapp_slot_name:
-        description: 'Azure Web App slot name for deployment'
-        required: false
-        type: string
+        type: boolean
+        default: false
 
     secrets:
       # NuGet Secrets
@@ -115,56 +102,28 @@ on:
         required: false
 
 jobs:
-  check_azure_tokens:
-    name: Check Azure Tokens
+  check_msdeploy_config:
+    name: Check MSDeploy Configuration
     runs-on: ubuntu-latest
     environment:
       name: ${{ inputs.environment_name }}
     outputs:
-      has_tokens: ${{ steps.check_tokens.outputs.has_tokens }}
-      has_webapp_name: ${{ steps.check_webapp_name.outputs.has_webapp_name }}
-      has_storage_tokens: ${{ steps.check_storage_tokens.outputs.has_storage_tokens }}
+      has_config: ${{ steps.check_config.outputs.has_config }}
     steps:
-      - name: Check Azure tokens are defined
-        id: check_tokens
+      - name: Check MSDeploy configuration is defined
+        id: check_config
         env:
-          AZURE_CLIENT_ID: ${{ inputs.azure_client_id || vars.AZURE_CLIENT_ID }}
-          AZURE_TENANT_ID: ${{ inputs.azure_tenant_id || vars.AZURE_TENANT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ inputs.azure_subscription_id || vars.AZURE_SUBSCRIPTION_ID }}
+          MSDEPLOY_SERVER_URL: ${{ inputs.msdeploy_server_url || vars.MSDEPLOY_SERVER_URL }}
+          MSDEPLOY_SITE_NAME: ${{ inputs.msdeploy_site_name || vars.MSDEPLOY_SITE_NAME }}
+          MSDEPLOY_USERNAME: ${{ inputs.msdeploy_username || vars.MSDEPLOY_USERNAME }}
+          MSDEPLOY_PASSWORD: ${{ inputs.msdeploy_password || vars.MSDEPLOY_PASSWORD }}
         shell: bash
         run: |
-          if [ -z "$AZURE_CLIENT_ID" ] || [ -z "$AZURE_TENANT_ID" ] || [ -z "$AZURE_SUBSCRIPTION_ID" ]; then
-            echo "has_tokens=false" >> $GITHUB_OUTPUT
-            echo "One or more Azure tokens are missing."
+          if [ -z "$MSDEPLOY_SERVER_URL" ] || [ -z "$MSDEPLOY_SITE_NAME" ] || [ -z "$MSDEPLOY_USERNAME" ] || [ -z "$MSDEPLOY_PASSWORD" ]; then
+            echo "has_config=false" >> $GITHUB_OUTPUT
+            echo "One or more MSDeploy configuration values are missing."
           else
-            echo "has_tokens=true" >> $GITHUB_OUTPUT
-          fi
-      - name: Check if Azure Web App name is defined
-        id: check_webapp_name
-        env:
-          AZURE_WEBAPP_NAME: ${{ inputs.azure_webapp_name || vars.AZURE_WEBAPP_NAME }}
-        shell: bash
-        if: inputs.dotnet_folder
-        run: |
-          if [ -z "$AZURE_WEBAPP_NAME" ]; then
-            echo "has_webapp_name=false" >> $GITHUB_OUTPUT
-            echo "Azure Web App name is missing."
-          else
-            echo "has_webapp_name=true" >> $GITHUB_OUTPUT
-          fi
-      - name: Check if Azure Storage tokens are defined
-        id: check_storage_tokens
-        env:
-          AZURE_STORAGE_ACCOUNT: ${{ inputs.azure_storage_account || vars.AZURE_STORAGE_ACCOUNT }}
-          AZURE_STORAGE_CONTAINER: ${{ inputs.azure_storage_container || vars.AZURE_STORAGE_CONTAINER }}
-        shell: bash
-        if: inputs.spa_folder && inputs.spa_deployment_method == 'azure-storage'
-        run: |
-          if [ -z "$AZURE_STORAGE_ACCOUNT" ] || [ -z "$AZURE_STORAGE_CONTAINER" ]; then
-            echo "has_storage_tokens=false" >> $GITHUB_OUTPUT
-            echo "One or more Azure Storage tokens are missing."
-          else
-            echo "has_storage_tokens=true" >> $GITHUB_OUTPUT
+            echo "has_config=true" >> $GITHUB_OUTPUT
           fi
 
   build_dotnet:
@@ -198,46 +157,48 @@ jobs:
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  deploy_webapp_netonly:
-    name: Deploy to Azure Web App
-    needs: [build_dotnet, check_azure_tokens]
-    if: inputs.dotnet_folder && needs.check_azure_tokens.outputs.has_webapp_name && !inputs.spa_folder
-    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@2.3.0
+  deploy_msdeploy_netonly:
+    name: Deploy to IIS with MSDeploy
+    needs: [build_dotnet, check_msdeploy_config]
+    if: inputs.dotnet_folder && needs.check_msdeploy_config.outputs.has_config == 'true' && !inputs.spa_folder
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-msdeploy.yml@2.3.0
     with:
       environment_name: ${{ inputs.environment_name }}
-      azure_client_id: ${{ inputs.azure_client_id }}
-      azure_tenant_id: ${{ inputs.azure_tenant_id }}
-      azure_subscription_id: ${{ inputs.azure_subscription_id }}
-      azure_webapp_name: ${{ inputs.azure_webapp_name }}
-      azure_webapp_slot_name: ${{ inputs.azure_webapp_slot_name }}
+      msdeploy_server_url: ${{ inputs.msdeploy_server_url }}
+      msdeploy_site_name: ${{ inputs.msdeploy_site_name }}
+      msdeploy_username: ${{ inputs.msdeploy_username }}
+      msdeploy_password: ${{ inputs.msdeploy_password }}
+      msdeploy_allow_untrusted: ${{ inputs.msdeploy_allow_untrusted }}
 
-  deploy_webapp_combination:
-    name: Deploy to Azure Web App
-    needs: [build_dotnet, build_spa, check_azure_tokens]
-    if: inputs.dotnet_folder && needs.check_azure_tokens.outputs.has_webapp_name && inputs.spa_folder
-    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@2.3.0
+  deploy_msdeploy_spaonly:
+    name: Deploy to IIS with MSDeploy
+    needs: [build_spa, check_msdeploy_config]
+    if: inputs.spa_folder && needs.check_msdeploy_config.outputs.has_config == 'true' && !inputs.dotnet_folder
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-msdeploy.yml@2.3.0
     with:
-      spa_artifact: ${{ inputs.spa_deployment_method == 'azure-webapp' && '.spa-app' || '' }}
+      artifact_name: '.spa-app'
       persisted_documents_artifact: ${{ inputs.persisted_documents_file && 'persisted-documents' || '' }}
       environment_name: ${{ inputs.environment_name }}
-      azure_client_id: ${{ inputs.azure_client_id }}
-      azure_tenant_id: ${{ inputs.azure_tenant_id }}
-      azure_subscription_id: ${{ inputs.azure_subscription_id }}
-      azure_webapp_name: ${{ inputs.azure_webapp_name }}
-      azure_webapp_slot_name: ${{ inputs.azure_webapp_slot_name }}
+      msdeploy_server_url: ${{ inputs.msdeploy_server_url }}
+      msdeploy_site_name: ${{ inputs.msdeploy_site_name }}
+      msdeploy_username: ${{ inputs.msdeploy_username }}
+      msdeploy_password: ${{ inputs.msdeploy_password }}
+      msdeploy_allow_untrusted: ${{ inputs.msdeploy_allow_untrusted }}
 
-  deploy_azurestorage:
-    name: Deploy SPA to Azure Storage
-    needs: [build_spa, check_azure_tokens]
-    if: inputs.spa_folder && inputs.spa_deployment_method == 'azure-storage' && needs.check_azure_tokens.outputs.has_storage_tokens
-    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurestorage.yml@2.3.0
+  deploy_msdeploy_combination:
+    name: Deploy to IIS with MSDeploy
+    needs: [build_dotnet, build_spa, check_msdeploy_config]
+    if: inputs.dotnet_folder && needs.check_msdeploy_config.outputs.has_config == 'true' && inputs.spa_folder
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-msdeploy.yml@2.3.0
     with:
+      spa_artifact: '.spa-app'
+      persisted_documents_artifact: ${{ inputs.persisted_documents_file && 'persisted-documents' || '' }}
       environment_name: ${{ inputs.environment_name }}
-      azure_client_id: ${{ inputs.azure_client_id }}
-      azure_tenant_id: ${{ inputs.azure_tenant_id }}
-      azure_subscription_id: ${{ inputs.azure_subscription_id }}
-      azure_storage_account: ${{ inputs.azure_storage_account }}
-      azure_storage_container: ${{ inputs.azure_storage_container }}
+      msdeploy_server_url: ${{ inputs.msdeploy_server_url }}
+      msdeploy_site_name: ${{ inputs.msdeploy_site_name }}
+      msdeploy_username: ${{ inputs.msdeploy_username }}
+      msdeploy_password: ${{ inputs.msdeploy_password }}
+      msdeploy_allow_untrusted: ${{ inputs.msdeploy_allow_untrusted }}
 
   dotnet_release_assets:
     name: Publish .NET Release Assets

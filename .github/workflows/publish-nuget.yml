@@ -49,7 +49,7 @@ on:
 jobs:
   build:
     name: Build NuGet Package
-    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@2.0.0
+    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@2.3.0
     with:
       dotnet_folder: ${{ inputs.dotnet_folder }}
       global_json_folder: ${{ inputs.global_json_folder }}
@@ -69,7 +69,7 @@ jobs:
       name: ${{ inputs.environment_name }}
     steps:
       - name: Download build artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: '.net-app'
           path: ./packages
@@ -125,7 +125,7 @@ jobs:
           fi
 
       - name: Setup .NET Core
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ needs.build.outputs.dotnet_version }}
           source-url: ${{ steps.nuget_config.outputs.source_url }}
@@ -146,7 +146,7 @@ jobs:
       contents: write
     steps:
       - name: Download .NET artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: '.net-app'
           path: packages
@@ -154,7 +154,7 @@ jobs:
         working-directory: packages
         run: zip -r ../nuget-packages.zip .
       - name: Upload nuget-packages.zip as Release Asset
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         continue-on-error: true
         with:
           script: |

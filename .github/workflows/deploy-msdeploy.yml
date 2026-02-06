@@ -1,0 +1,154 @@
+name: Deploy with MSDeploy
+
+on:
+  workflow_call:
+    inputs:
+      environment_name:
+        description: 'Environment name for deployment'
+        required: true
+        type: string
+      artifact_name:
+        description: 'Name of the artifact to deploy to the root of the site'
+        required: false
+        type: string
+        default: '.net-app'
+      spa_artifact:
+        description: 'Name of the SPA artifact to deploy to the wwwroot subfolder (for combined .NET+SPA deployments)'
+        required: false
+        type: string
+      persisted_documents_artifact:
+        description: 'Name of the persisted documents artifact to deploy to the root'
+        required: false
+        type: string
+      msdeploy_server_url:
+        description: 'MSDeploy server URL for deployment'
+        required: false
+        type: string
+      msdeploy_site_name:
+        description: 'IIS site name for deployment'
+        required: false
+        type: string
+      msdeploy_username:
+        description: 'Username for MSDeploy authentication'
+        required: false
+        type: string
+      msdeploy_password:
+        description: 'Password for MSDeploy authentication'
+        required: false
+        type: string
+      msdeploy_allow_untrusted:
+        description: 'Allow untrusted SSL certificates'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  deploy_msdeploy:
+    name: Deploy Application
+    runs-on: windows-latest
+    environment:
+      name: ${{ inputs.environment_name }}
+    steps:
+      - name: Validate required inputs
+        env:
+          MSDEPLOY_SERVER_URL: ${{ inputs.msdeploy_server_url || vars.MSDEPLOY_SERVER_URL }}
+          MSDEPLOY_SITE_NAME: ${{ inputs.msdeploy_site_name || vars.MSDEPLOY_SITE_NAME }}
+          MSDEPLOY_USERNAME: ${{ inputs.msdeploy_username || vars.MSDEPLOY_USERNAME }}
+          MSDEPLOY_PASSWORD: ${{ inputs.msdeploy_password || vars.MSDEPLOY_PASSWORD }}
+        shell: pwsh
+        run: |
+          $MISSING_VARS = @()
+          
+          if ([string]::IsNullOrEmpty($env:MSDEPLOY_SERVER_URL)) {
+            $MISSING_VARS += "MSDEPLOY_SERVER_URL"
+          }
+          
+          if ([string]::IsNullOrEmpty($env:MSDEPLOY_SITE_NAME)) {
+            $MISSING_VARS += "MSDEPLOY_SITE_NAME"
+          }
+          
+          if ([string]::IsNullOrEmpty($env:MSDEPLOY_USERNAME)) {
+            $MISSING_VARS += "MSDEPLOY_USERNAME"
+          }
+          
+          if ([string]::IsNullOrEmpty($env:MSDEPLOY_PASSWORD)) {
+            $MISSING_VARS += "MSDEPLOY_PASSWORD"
+          }
+          
+          if ($MISSING_VARS.Count -gt 0) {
+            Write-Host "❌ Missing required variables or inputs: $($MISSING_VARS -join ', ')"
+            Write-Host "Please provide these as workflow inputs or repository/environment variables."
+            exit 1
+          }
+          
+          Write-Host "✅ All required variables are provided"
+
+      - name: Download .NET artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: deploy-package
+
+      - name: Download SPA persisted documents file
+        uses: actions/download-artifact@v7
+        if: inputs.persisted_documents_artifact != ''
+        with:
+          name: ${{ inputs.persisted_documents_artifact }}
+          path: deploy-package
+
+      - name: Download SPA artifact
+        uses: actions/download-artifact@v7
+        if: inputs.spa_artifact
+        with:
+          name: ${{ inputs.spa_artifact }}
+          path: deploy-package/wwwroot
+
+      - name: Deploy to IIS with MSDeploy
+        env:
+          MSDEPLOY_SERVER_URL: ${{ inputs.msdeploy_server_url || vars.MSDEPLOY_SERVER_URL }}
+          MSDEPLOY_SITE_NAME: ${{ inputs.msdeploy_site_name || vars.MSDEPLOY_SITE_NAME }}
+          MSDEPLOY_USERNAME: ${{ inputs.msdeploy_username || vars.MSDEPLOY_USERNAME }}
+          MSDEPLOY_PASSWORD: ${{ inputs.msdeploy_password || vars.MSDEPLOY_PASSWORD }}
+          MSDEPLOY_ALLOW_UNTRUSTED: ${{ inputs.msdeploy_allow_untrusted }}
+        shell: pwsh
+        run: |
+          $msdeployPath = "C:\Program Files\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          
+          if (-not (Test-Path $msdeployPath)) {
+            $msdeployPath = "C:\Program Files (x86)\IIS\Microsoft Web Deploy V3\msdeploy.exe"
+          }
+          
+          if (-not (Test-Path $msdeployPath)) {
+            Write-Host "❌ MSDeploy not found. Please ensure Web Deploy is installed."
+            exit 1
+          }
+          
+          Write-Host "✅ Found MSDeploy at: $msdeployPath"
+          
+          # Escape single quotes in values by doubling them
+          $siteName = $env:MSDEPLOY_SITE_NAME -replace "'", "''"
+          $serverUrl = $env:MSDEPLOY_SERVER_URL -replace "'", "''"
+          $username = $env:MSDEPLOY_USERNAME -replace "'", "''"
+          $password = $env:MSDEPLOY_PASSWORD -replace "'", "''"
+          
+          $allowUntrusted = if ($env:MSDEPLOY_ALLOW_UNTRUSTED -eq 'true') { '-allowUntrusted' } else { '' }
+          
+          $arguments = @(
+            '-verb:sync',
+            '-source:contentPath="deploy-package"',
+            "-dest:contentPath='$siteName',computerName='$serverUrl',username='$username',password='$password',authtype='Basic'",
+            '-enableRule:DoNotDeleteRule',
+            '-enableRule:AppOffline',
+            $allowUntrusted
+          ) | Where-Object { $_ -ne '' }
+          
+          Write-Host "🚀 Deploying to IIS site: $env:MSDEPLOY_SITE_NAME"
+          
+          & $msdeployPath $arguments
+          
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "❌ MSDeploy failed with exit code: $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
+          
+          Write-Host "✅ Deployment completed successfully"

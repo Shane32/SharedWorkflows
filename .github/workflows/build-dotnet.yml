@@ -62,7 +62,7 @@ jobs:
       dotnet_version: ${{ steps.setup_dotnet.outputs.dotnet-version }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set version number
         id: set_version
@@ -93,13 +93,13 @@ jobs:
 
       - name: Setup .NET Core
         id: setup_dotnet
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           global-json-file: ${{ inputs.global_json_folder }}/global.json
 
       - name: Add NuGet Sources
         if: inputs.nuget_accounts != ''
-        uses: Shane32/SharedWorkflows/.github/actions/add-nuget-sources@2.0.0
+        uses: Shane32/SharedWorkflows/.github/actions/add-nuget-sources@2.3.0
         with:
           accounts: ${{ inputs.nuget_accounts }}
           username: ${{ secrets.NUGET_ORG_USER }}
@@ -125,7 +125,7 @@ jobs:
         working-directory: ${{ inputs.dotnet_folder }}
 
       - name: Upload .NET build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.artifact_name }}
           path: ${{ inputs.dotnet_folder }}/build_output

@@ -1,10 +1,10 @@
-# Publish Application Workflow
+# Publish Application with MSDeploy Workflow
 
-This reusable GitHub Actions workflow automates the process of building and deploying .NET and/or SPA (Single Page Application) projects to Azure. It provides flexibility to build and deploy either or both project types, supporting deployment to Azure Web Apps and/or Azure Storage.
+This reusable GitHub Actions workflow automates the process of building and deploying .NET and/or SPA (Single Page Application) projects to IIS servers using Microsoft Web Deploy (MSDeploy). It provides flexibility to build and deploy either or both project types, combining artifacts when both are present.
 
 ## Functionality Summary
 
-The **Publish Application** workflow includes the following features:
+The **Publish Application with MSDeploy** workflow includes the following features:
 
 - **.NET Backend Build**:
   - Restores NuGet packages and builds the .NET application.
@@ -17,17 +17,18 @@ The **Publish Application** workflow includes the following features:
   - Uploads the built SPA artifact and optionally a persisted documents file.
   - Adds a GitHub release asset, if applicable, with the SPA application
 
-- **Deployment to Azure**:
-  - Deploys the .NET and/or SPA application to Azure Web App.
-  - Deploys the SPA application to Azure Storage for static website hosting.
-  - Supports deployment methods: `azure-webapp` and `azure-storage`.
+- **Deployment to IIS with MSDeploy**:
+  - Deploys the .NET application to IIS via MSDeploy.
+  - Deploys SPA-only applications to the root of the IIS site.
+  - When both .NET and SPA are present, combines them before deployment (SPA goes to wwwroot).
+  - Supports Basic authentication and configurable SSL certificate validation.
 
 - **Conditional Execution**:
   - Workflow steps are conditionally executed based on the inputs provided.
   - Skips .NET steps if `dotnet_folder` is not specified.
   - Skips SPA steps if `spa_folder` is not specified.
-  - Build jobs run regardless of whether Azure credentials are configured.
-  - Deployment jobs only run if Azure credentials are provided.
+  - Build jobs run regardless of whether MSDeploy is configured.
+  - Deployment jobs only run if MSDeploy configuration is provided.
   - Release assets are created whenever builds run, regardless of deployment configuration.
 
 ## Configuration Options
@@ -36,7 +37,7 @@ The **Publish Application** workflow includes the following features:
 
 | **Input Name**         | **Description**                                                                     | **Required** | **Default Value**    |
 |------------------------|-------------------------------------------------------------------------------------|--------------|----------------------|
-| `environment_name`     | Specifies the GitHub environment to use while building and for Azure authentication | Yes          | None                 |
+| `environment_name`     | Specifies the GitHub environment to use while building and for MSDeploy authentication | Yes       | None                 |
 
 ### .NET Build Inputs
 
@@ -53,7 +54,6 @@ The **Publish Application** workflow includes the following features:
 | **Input Name**             | **Description**                                                   | **Required** | **Default Value** | **Comments** |
 |----------------------------|-------------------------------------------------------------------|--------------|-------------------|--------------|
 | `spa_folder`               | Path to the SPA project folder                                    | No           | None              | Omitting skips SPA-related steps |
-| `spa_deployment_method`    | SPA deployment method: `azure-webapp` or `azure-storage`          | No           | None              | Required to deploy |
 | `spa_version_env`          | Environment variable to set with the version number               | No           | `VITE_VERSION`    | e.g. `REACT_APP_VERSION` for React |
 | `npm_build_script`         | NPM script used to build the SPA application                      | No           | `build`           |              |
 | `npm_dist_folder`          | Path to the SPA distribution folder (relative to `spa_folder`)    | No           | `dist`            |              |
@@ -61,17 +61,15 @@ The **Publish Application** workflow includes the following features:
 | `npm_analyze_script`       | NPM script to run after build for analysis                        | No           | None              |              |
 | `analysis_artifacts`       | Full path to files to upload as analysis artifacts (glob pattern) | No           | None              |              |
 
-### Azure Configuration Inputs
+### MSDeploy Configuration Inputs
 
-| **Input Name**            | **Description**                                   | **Required** | **Default Value** |
-|---------------------------|---------------------------------------------------|--------------|-------------------|
-| `azure_client_id`         | Client ID for Azure deployment                    | No           | None              |
-| `azure_tenant_id`         | Tenant ID for Azure deployment                    | No           | None              |
-| `azure_subscription_id`   | Subscription ID for Azure deployment              | No           | None              |
-| `azure_webapp_name`       | Azure Web App name for deployment                 | No           | None              |
-| `azure_webapp_slot_name`  | Azure Web App slot name for deployment            | No           | None              |
-| `azure_storage_account`   | Azure Storage account name for deployment         | No           | None              |
-| `azure_storage_container` | Azure Storage container name for deployment       | No           | None              |
+| **Input Name**              | **Description**                           | **Required** | **Default Value** |
+|-----------------------------|-------------------------------------------|--------------|-------------------|
+| `msdeploy_server_url`       | MSDeploy server URL for deployment        | No           | None              |
+| `msdeploy_site_name`        | IIS site name for deployment              | No           | None              |
+| `msdeploy_username`         | Username for MSDeploy authentication      | No           | None              |
+| `msdeploy_password`         | Password for MSDeploy authentication      | No           | None              |
+| `msdeploy_allow_untrusted`  | Allow untrusted SSL certificates          | No           | `false`           |
 
 ### Environment Variables
 
@@ -79,20 +77,17 @@ If an environment is configured, variables configured for the specified environm
 
 ### Required Variables or Inputs
 
-The workflow requires the following Azure configuration values to be provided either as:
+The workflow requires the following MSDeploy configuration values to be provided either as:
 
 - **Workflow inputs** (as shown in the table above), or
 - **Repository/Environment variables** with these names:
 
-| **Variable Name**         | **Description**                                   | **Required**                                | **Default Value** |
-|---------------------------|---------------------------------------------------|---------------------------------------------|-------------------|
-| `AZURE_CLIENT_ID`         | Client ID for Azure deployment                    | No (will skip deployment if not specified)  | None              |
-| `AZURE_TENANT_ID`         | Tenant ID for Azure deployment                    | No (will skip deployment if not specified)  | None              |
-| `AZURE_SUBSCRIPTION_ID`   | Subscription ID for Azure deployment              | No (will skip deployment if not specified)  | None              |
-| `AZURE_WEBAPP_NAME`       | Azure Web App name for deployment                                    | Required if `deployment_method` is `azure-webapp`  | None         |
-| `AZURE_WEBAPP_SLOT_NAME`  | Azure Web App slot name for deployment                               | No                                                 | `Production` |
-| `AZURE_STORAGE_ACCOUNT`   | Azure Storage account name for deployment (`azure-storage` method)   | Required if `deployment_method` is `azure-storage` | None         |
-| `AZURE_STORAGE_CONTAINER` | Azure Storage container name for deployment (`azure-storage` method) | Required if `deployment_method` is `azure-storage` | None         |
+| **Variable Name**       | **Description**                        | **Required**                               | **Default Value** |
+|-------------------------|----------------------------------------|--------------------------------------------|-------------------|
+| `MSDEPLOY_SERVER_URL`   | MSDeploy server URL for deployment     | No (will skip deployment if not specified) | None              |
+| `MSDEPLOY_SITE_NAME`    | IIS site name for deployment           | No (will skip deployment if not specified) | None              |
+| `MSDEPLOY_USERNAME`     | Username for MSDeploy authentication   | No (will skip deployment if not specified) | None              |
+| `MSDEPLOY_PASSWORD`     | Password for MSDeploy authentication   | No (will skip deployment if not specified) | None              |
 
 The workflow will first check for values provided as inputs, and if not found, will fall back to repository or environment variables. If neither is available, the workflow will skip deployment steps but will still build the application and create release assets.
 
@@ -106,7 +101,7 @@ The workflow will first check for values provided as inputs, and if not found, w
 
 ## Example Usage Scripts
 
-### 1. Deploy .NET Application to Azure Web App for development
+### 1. Deploy .NET Application to IIS for development
 
 ```yaml
 name: Deploy .NET Application
@@ -122,10 +117,9 @@ concurrency:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app-msbuild.yml@v2
     permissions:
       contents: write
-      id-token: write
     with:
       dotnet_folder: '.'
       environment_name: Development
@@ -134,9 +128,9 @@ jobs:
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
 ```
 
-The above example assumes that the necessary Azure configuration values are stored as GitHub environment variables for the Development environment.
+The above example assumes that the necessary MSDeploy configuration values are stored as GitHub environment variables for the Development environment.
 
-### 2. Deploy SPA to Azure Storage for development
+### 2. Deploy SPA Only to IIS for development
 
 ```yaml
 name: Deploy SPA Application
@@ -152,24 +146,21 @@ concurrency:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app-msbuild.yml@v2
     permissions:
       contents: write
-      id-token: write
     with:
       spa_folder: ReactApp
-      spa_deployment_method: azure-storage
       environment_name: Development
-      azure_storage_account: mystorageaccount
-      azure_storage_container: public
-      azure_client_id: ${{ secrets.AZURE_DEV_CLIENT_ID }}
-      azure_tenant_id: ${{ secrets.AZURE_DEV_TENANT_ID }}
-      azure_subscription_id: ${{ secrets.AZURE_DEV_SUBSCRIPTION_ID }}
+      msdeploy_server_url: https://dev-server.example.com:8172/msdeploy.axd
+      msdeploy_site_name: DevSite
+      msdeploy_username: deploy-user
+      msdeploy_password: ${{ vars.MSDEPLOY_DEV_PASSWORD }}
 ```
 
-The above example shows how to provide Azure configuration values as workflow inputs, pulling from repository secrets.
+The above example shows how to provide MSDeploy configuration values as workflow inputs, pulling from repository variables.
 
-### 3. Deploy Full Application (Backend and SPA) to Azure Web App for production
+### 3. Deploy Full Application (Backend and SPA) to IIS for production
 
 ```yaml
 name: Deploy Full Application
@@ -181,14 +172,12 @@ on:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app-msbuild.yml@v2
     permissions:
       contents: write
-      id-token: write
     with:
       dotnet_folder: '.'
       spa_folder: ReactApp
-      spa_deployment_method: azure-webapp
       environment_name: Production
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
@@ -196,12 +185,37 @@ jobs:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
 
-The above example assumes that the necessary Azure configuration values are stored as GitHub environment variables, and only passes the required NuGet secrets.
+The above example assumes that the necessary MSDeploy configuration values are stored as GitHub environment variables, and only passes the required NuGet secrets. When both .NET and SPA are specified, the SPA will be automatically deployed to the wwwroot folder within the IIS site.
 
 ## Notes
 
-- The `permissions: id-token: write` is required for Azure deployment workflows to enable OIDC authentication with Azure.
+- Unlike the Azure version, this workflow does not have a `spa_deployment_method` input
+- When deploying SPA-only (no .NET), the SPA is deployed to the root of the IIS site
+- When both .NET and SPA are present, they are automatically combined before deployment (SPA goes to wwwroot)
+- The workflow runs on Windows runners for deployment due to MSDeploy requirements
 - `NUGET_ORG_USER`, `NUGET_ORG_TOKEN`, and `NPM_TOKEN` should already be configured as organization secrets but need to be passed in.
 - `global.json` is required
 - Cannot override .NET SDK with another version or install multiple SDKs
 - `permissions: contents: write` is necessary to upload the compiled application as a release asset
+- The `msdeploy_allow_untrusted` option should only be set to `true` for development/staging environments with self-signed certificates
+
+## MSDeploy Server URL Format
+
+The MSDeploy server URL typically follows this format:
+
+```
+https://server-name:8172/msdeploy.axd
+```
+
+Where:
+- `server-name` is your IIS server hostname or IP address
+- `8172` is the default MSDeploy port (may vary based on your configuration)
+- `/msdeploy.axd` is the MSDeploy handler endpoint
+
+## IIS Site Name
+
+The IIS site name should match the exact name of the website or application in IIS where you want to deploy. For deploying to a specific application within a site, use the format:
+
+```
+SiteName/ApplicationName
+```
