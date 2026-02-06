@@ -142,7 +142,7 @@ jobs:
 
 The MSDeploy server URL typically follows this format:
 
-```
+```text
 https://server-name:8172/msdeploy.axd
 ```
 
@@ -155,6 +155,6 @@ Where:
 
 The IIS site name should match the exact name of the website or application in IIS where you want to deploy. For deploying to a specific application within a site, use the format:
 
-```
+```text
 SiteName/ApplicationName
 ```
