@@ -145,7 +145,7 @@ jobs:
           
           Write-Host "🚀 Deploying to IIS site: $env:MSDEPLOY_SITE_NAME"
           
-          & $msdeployPath $arguments
+          & $msdeployPath @arguments
           
           if ($LASTEXITCODE -ne 0) {
             Write-Host "❌ MSDeploy failed with exit code: $LASTEXITCODE"
