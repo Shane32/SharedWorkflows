@@ -84,18 +84,18 @@ jobs:
           echo "✅ All required variables are provided"
 
       - name: Download .NET artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ${{ inputs.artifact_name }}
 
       - name: Download SPA persisted documents file
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         if: inputs.persisted_documents_artifact != ''
         with:
           name: ${{ inputs.persisted_documents_artifact }}
 
       - name: Download SPA artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         if: inputs.spa_artifact
         with:
           name: ${{ inputs.spa_artifact }}

@@ -73,7 +73,7 @@ jobs:
         name: ${{ inputs.environment_name }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set version number
         if: inputs.spa_version_env
@@ -97,13 +97,13 @@ jobs:
           fi
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: ${{ inputs.spa_folder }}/package.json
 
       - name: Add NPM Sources
         if: inputs.npm_accounts != ''
-        uses: Shane32/SharedWorkflows/.github/actions/add-npm-sources@2.1.0
+        uses: Shane32/SharedWorkflows/.github/actions/add-npm-sources@2.3.0
         with:
           accounts: ${{ inputs.npm_accounts }}
           token: ${{ secrets.NPM_TOKEN }}
@@ -118,14 +118,14 @@ jobs:
         working-directory: ${{ inputs.spa_folder }}
 
       - name: Upload SPA build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.artifact_name }}
           path: ${{ inputs.spa_folder }}/${{ inputs.npm_dist_folder }}
 
       - name: Upload SPA persisted documents file
         if: inputs.persisted_documents_file
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.persisted_documents_artifact }}
           path: ${{ inputs.persisted_documents_file }}
@@ -138,7 +138,7 @@ jobs:
 
       - name: Upload analysis artifacts
         if: inputs.analysis_files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.analysis_artifact }}
           path: ${{ inputs.analysis_files }}
