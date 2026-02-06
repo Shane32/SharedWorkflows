@@ -125,12 +125,18 @@ jobs:
           
           Write-Host "✅ Found MSDeploy at: $msdeployPath"
           
+          # Escape single quotes in values by doubling them
+          $siteName = $env:MSDEPLOY_SITE_NAME -replace "'", "''"
+          $serverUrl = $env:MSDEPLOY_SERVER_URL -replace "'", "''"
+          $username = $env:MSDEPLOY_USERNAME -replace "'", "''"
+          $password = $env:MSDEPLOY_PASSWORD -replace "'", "''"
+          
           $allowUntrusted = if ($env:MSDEPLOY_ALLOW_UNTRUSTED -eq 'true') { '-allowUntrusted' } else { '' }
           
           $arguments = @(
             '-verb:sync',
             '-source:contentPath="deploy-package"',
-            "-dest:contentPath='$env:MSDEPLOY_SITE_NAME',computerName='$env:MSDEPLOY_SERVER_URL',username='$env:MSDEPLOY_USERNAME',password='$env:MSDEPLOY_PASSWORD',authtype='Basic'",
+            "-dest:contentPath='$siteName',computerName='$serverUrl',username='$username',password='$password',authtype='Basic'",
             '-enableRule:DoNotDeleteRule',
             '-enableRule:AppOffline',
             $allowUntrusted
