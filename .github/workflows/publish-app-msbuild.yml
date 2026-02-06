@@ -81,10 +81,6 @@ on:
         description: 'Username for MSDeploy authentication'
         required: false
         type: string
-      msdeploy_password:
-        description: 'Password for MSDeploy authentication'
-        required: false
-        type: string
       msdeploy_allow_untrusted:
         description: 'Allow untrusted SSL certificates'
         required: false
@@ -99,6 +95,10 @@ on:
         required: false
       # NPM Secrets
       NPM_TOKEN:
+        required: false
+      # MSDeploy Secrets
+      msdeploy_password:
+        description: 'Password for MSDeploy authentication'
         required: false
 
 jobs:
@@ -116,7 +116,7 @@ jobs:
           MSDEPLOY_SERVER_URL: ${{ inputs.msdeploy_server_url || vars.MSDEPLOY_SERVER_URL }}
           MSDEPLOY_SITE_NAME: ${{ inputs.msdeploy_site_name || vars.MSDEPLOY_SITE_NAME }}
           MSDEPLOY_USERNAME: ${{ inputs.msdeploy_username || vars.MSDEPLOY_USERNAME }}
-          MSDEPLOY_PASSWORD: ${{ inputs.msdeploy_password || vars.MSDEPLOY_PASSWORD }}
+          MSDEPLOY_PASSWORD: ${{ secrets.msdeploy_password || vars.MSDEPLOY_PASSWORD }}
         shell: bash
         run: |
           if [ -z "$MSDEPLOY_SERVER_URL" ] || [ -z "$MSDEPLOY_SITE_NAME" ] || [ -z "$MSDEPLOY_USERNAME" ] || [ -z "$MSDEPLOY_PASSWORD" ]; then
@@ -167,8 +167,9 @@ jobs:
       msdeploy_server_url: ${{ inputs.msdeploy_server_url }}
       msdeploy_site_name: ${{ inputs.msdeploy_site_name }}
       msdeploy_username: ${{ inputs.msdeploy_username }}
-      msdeploy_password: ${{ inputs.msdeploy_password }}
       msdeploy_allow_untrusted: ${{ inputs.msdeploy_allow_untrusted }}
+    secrets:
+      msdeploy_password: ${{ secrets.msdeploy_password }}
 
   deploy_msdeploy_spaonly:
     name: Deploy to IIS with MSDeploy
@@ -182,8 +183,9 @@ jobs:
       msdeploy_server_url: ${{ inputs.msdeploy_server_url }}
       msdeploy_site_name: ${{ inputs.msdeploy_site_name }}
       msdeploy_username: ${{ inputs.msdeploy_username }}
-      msdeploy_password: ${{ inputs.msdeploy_password }}
       msdeploy_allow_untrusted: ${{ inputs.msdeploy_allow_untrusted }}
+    secrets:
+      msdeploy_password: ${{ secrets.msdeploy_password }}
 
   deploy_msdeploy_combination:
     name: Deploy to IIS with MSDeploy
@@ -197,8 +199,9 @@ jobs:
       msdeploy_server_url: ${{ inputs.msdeploy_server_url }}
       msdeploy_site_name: ${{ inputs.msdeploy_site_name }}
       msdeploy_username: ${{ inputs.msdeploy_username }}
-      msdeploy_password: ${{ inputs.msdeploy_password }}
       msdeploy_allow_untrusted: ${{ inputs.msdeploy_allow_untrusted }}
+    secrets:
+      msdeploy_password: ${{ secrets.msdeploy_password }}
 
   dotnet_release_assets:
     name: Publish .NET Release Assets

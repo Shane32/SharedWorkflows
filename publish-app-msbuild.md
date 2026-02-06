@@ -68,19 +68,19 @@ The **Publish Application with MSDeploy** workflow includes the following featur
 | `msdeploy_server_url`       | MSDeploy server URL for deployment        | No           | None              |
 | `msdeploy_site_name`        | IIS site name for deployment              | No           | None              |
 | `msdeploy_username`         | Username for MSDeploy authentication      | No           | None              |
-| `msdeploy_password`         | Password for MSDeploy authentication      | No           | None              |
 | `msdeploy_allow_untrusted`  | Allow untrusted SSL certificates          | No           | `false`           |
 
 ### Environment Variables
 
 If an environment is configured, variables configured for the specified environment are used as shell environment variables when building the code.
 
-### Required Variables or Inputs
+### Required Variables, Inputs, or Secrets
 
 The workflow requires the following MSDeploy configuration values to be provided either as:
 
-- **Workflow inputs** (as shown in the table above), or
-- **Repository/Environment variables** with these names:
+- **Workflow inputs** (as shown in the table above)
+- **Repository/Environment variables** with these names
+- **Secrets** (for sensitive values like passwords)
 
 | **Variable Name**       | **Description**                        | **Required**                               | **Default Value** |
 |-------------------------|----------------------------------------|--------------------------------------------|-------------------|
@@ -89,7 +89,7 @@ The workflow requires the following MSDeploy configuration values to be provided
 | `MSDEPLOY_USERNAME`     | Username for MSDeploy authentication   | No (will skip deployment if not specified) | None              |
 | `MSDEPLOY_PASSWORD`     | Password for MSDeploy authentication   | No (will skip deployment if not specified) | None              |
 
-The workflow will first check for values provided as inputs, and if not found, will fall back to repository or environment variables. If neither is available, the workflow will skip deployment steps but will still build the application and create release assets.
+The workflow will first check for values provided as inputs or secrets, and if not found, will fall back to repository or environment variables. If neither is available, the workflow will skip deployment steps but will still build the application and create release assets.
 
 ### Secrets
 
@@ -98,6 +98,7 @@ The workflow will first check for values provided as inputs, and if not found, w
 | `NUGET_ORG_USER`          | Username for private NuGet source (if applicable)     | No           | None              |
 | `NUGET_ORG_TOKEN`         | Token for private NuGet source (if applicable)        | No           | None              |
 | `NPM_TOKEN`               | GitHub Personal Access Token for private npm packages | No           | None              |
+| `msdeploy_password`       | Password for MSDeploy authentication                  | No           | None              |
 
 ## Example Usage Scripts
 
@@ -126,9 +127,10 @@ jobs:
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
+      msdeploy_password: ${{ secrets.MSDEPLOY_PASSWORD }}
 ```
 
-The above example assumes that the necessary MSDeploy configuration values are stored as GitHub environment variables for the Development environment.
+The above example assumes that the necessary MSDeploy configuration values are stored as GitHub environment variables for the Development environment, with the password stored as a secret.
 
 ### 2. Deploy SPA Only to IIS for development
 
@@ -155,10 +157,11 @@ jobs:
       msdeploy_server_url: https://dev-server.example.com:8172/msdeploy.axd
       msdeploy_site_name: DevSite
       msdeploy_username: deploy-user
-      msdeploy_password: ${{ vars.MSDEPLOY_DEV_PASSWORD }}
+    secrets:
+      msdeploy_password: ${{ secrets.MSDEPLOY_DEV_PASSWORD }}
 ```
 
-The above example shows how to provide MSDeploy configuration values as workflow inputs, pulling from repository variables.
+The above example shows how to provide MSDeploy configuration values as workflow inputs, with the password passed as a secret.
 
 ### 3. Deploy Full Application (Backend and SPA) to IIS for production
 
