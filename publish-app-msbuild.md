@@ -63,12 +63,13 @@ The **Publish Application with MSDeploy** workflow includes the following featur
 
 ### MSDeploy Configuration Inputs
 
-| **Input Name**              | **Description**                           | **Required** | **Default Value** |
-|-----------------------------|-------------------------------------------|--------------|-------------------|
-| `msdeploy_server_url`       | MSDeploy server URL for deployment        | No           | None              |
-| `msdeploy_site_name`        | IIS site name for deployment              | No           | None              |
-| `msdeploy_username`         | Username for MSDeploy authentication      | No           | None              |
-| `msdeploy_allow_untrusted`  | Allow untrusted SSL certificates          | No           | `false`           |
+| **Input Name**                  | **Description**                                                 | **Required** | **Default Value** |
+|---------------------------------|-----------------------------------------------------------------|--------------|-------------------|
+| `msdeploy_server_url`           | MSDeploy server URL for deployment                              | No           | None              |
+| `msdeploy_site_name`            | IIS site name for deployment                                    | No           | None              |
+| `msdeploy_username`             | Username for MSDeploy authentication                            | No           | None              |
+| `msdeploy_allow_untrusted`      | Allow untrusted SSL certificates                                | No           | `false`           |
+| `msdeploy_do_not_delete`        | Prevent deletion of files not in source                         | No           | `false`           |
 
 ### Environment Variables
 

@@ -86,6 +86,11 @@ on:
         required: false
         type: boolean
         default: false
+      msdeploy_do_not_delete:
+        description: 'Prevent deletion of files not in the source'
+        required: false
+        type: boolean
+        default: false
 
     secrets:
       # NuGet Secrets
@@ -168,6 +173,7 @@ jobs:
       msdeploy_site_name: ${{ inputs.msdeploy_site_name }}
       msdeploy_username: ${{ inputs.msdeploy_username }}
       msdeploy_allow_untrusted: ${{ inputs.msdeploy_allow_untrusted }}
+      msdeploy_do_not_delete: ${{ inputs.msdeploy_do_not_delete }}
     secrets:
       msdeploy_password: ${{ secrets.msdeploy_password }}
 
@@ -184,6 +190,7 @@ jobs:
       msdeploy_site_name: ${{ inputs.msdeploy_site_name }}
       msdeploy_username: ${{ inputs.msdeploy_username }}
       msdeploy_allow_untrusted: ${{ inputs.msdeploy_allow_untrusted }}
+      msdeploy_do_not_delete: ${{ inputs.msdeploy_do_not_delete }}
     secrets:
       msdeploy_password: ${{ secrets.msdeploy_password }}
 
@@ -200,6 +207,7 @@ jobs:
       msdeploy_site_name: ${{ inputs.msdeploy_site_name }}
       msdeploy_username: ${{ inputs.msdeploy_username }}
       msdeploy_allow_untrusted: ${{ inputs.msdeploy_allow_untrusted }}
+      msdeploy_do_not_delete: ${{ inputs.msdeploy_do_not_delete }}
     secrets:
       msdeploy_password: ${{ secrets.msdeploy_password }}
 

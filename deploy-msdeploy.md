@@ -36,6 +36,7 @@ The **Deploy with MSDeploy** workflow includes the following features:
 | `msdeploy_site_name`           | IIS site name for deployment                               | No           | None              |
 | `msdeploy_username`            | Username for MSDeploy authentication                       | No           | None              |
 | `msdeploy_allow_untrusted`     | Allow untrusted SSL certificates                           | No           | `false`           |
+| `msdeploy_do_not_delete`       | Do not delete files not in the source                      | No           | `false`           |
 
 ### Required Variables, Inputs, or Secrets
 
@@ -144,7 +145,8 @@ jobs:
 - For SPA-only deployments, use `artifact_name` to deploy the SPA to the root instead of using `spa_artifact`
 - Persisted document artifacts automatically deploy to the root folder when specified
 - All artifacts must be previously created and available in the workflow run
-- The workflow uses DoNotDeleteRule to preserve files not in the source package
+- By default, files not in the source package will be deleted from the destination
+- Set `msdeploy_do_not_delete: true` to preserve files not in the source package
 - The workflow uses AppOffline rule to take the application offline during deployment
 
 ## MSDeploy Server URL Format
