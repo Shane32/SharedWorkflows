@@ -172,6 +172,21 @@ jobs:
       msdeploy_password: ${{ inputs.msdeploy_password }}
       msdeploy_allow_untrusted: ${{ inputs.msdeploy_allow_untrusted }}
 
+  deploy_msdeploy_spaonly:
+    name: Deploy to IIS with MSDeploy
+    needs: [build_spa, check_msdeploy_config]
+    if: inputs.spa_folder && needs.check_msdeploy_config.outputs.has_config == 'true' && !inputs.dotnet_folder
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-msdeploy.yml@2.3.0
+    with:
+      artifact_name: '.spa-app'
+      persisted_documents_artifact: ${{ inputs.persisted_documents_file && 'persisted-documents' || '' }}
+      environment_name: ${{ inputs.environment_name }}
+      msdeploy_server_url: ${{ inputs.msdeploy_server_url }}
+      msdeploy_site_name: ${{ inputs.msdeploy_site_name }}
+      msdeploy_username: ${{ inputs.msdeploy_username }}
+      msdeploy_password: ${{ inputs.msdeploy_password }}
+      msdeploy_allow_untrusted: ${{ inputs.msdeploy_allow_untrusted }}
+
   deploy_msdeploy_combination:
     name: Deploy to IIS with MSDeploy
     needs: [build_dotnet, build_spa, check_msdeploy_config]

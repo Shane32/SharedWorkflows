@@ -19,6 +19,7 @@ The **Publish Application with MSDeploy** workflow includes the following featur
 
 - **Deployment to IIS with MSDeploy**:
   - Deploys the .NET application to IIS via MSDeploy.
+  - Deploys SPA-only applications to the root of the IIS site.
   - When both .NET and SPA are present, combines them before deployment (SPA goes to wwwroot).
   - Supports Basic authentication and configurable SSL certificate validation.
 
@@ -187,6 +188,7 @@ The above example assumes that the necessary MSDeploy configuration values are s
 ## Notes
 
 - Unlike the Azure version, this workflow does not have a `spa_deployment_method` input
+- When deploying SPA-only (no .NET), the SPA is deployed to the root of the IIS site
 - When both .NET and SPA are present, they are automatically combined before deployment (SPA goes to wwwroot)
 - The workflow runs on Windows runners for deployment due to MSDeploy requirements
 - `NUGET_ORG_USER`, `NUGET_ORG_TOKEN`, and `NPM_TOKEN` should already be configured as organization secrets but need to be passed in.

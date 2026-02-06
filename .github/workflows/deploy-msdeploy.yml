@@ -8,16 +8,16 @@ on:
         required: true
         type: string
       artifact_name:
-        description: 'Name of the .NET artifact to deploy'
+        description: 'Name of the artifact to deploy to the root of the site'
         required: false
         type: string
         default: '.net-app'
       spa_artifact:
-        description: 'Name of the SPA artifact to deploy in the wwwroot folder'
+        description: 'Name of the SPA artifact to deploy to the wwwroot subfolder (for combined .NET+SPA deployments)'
         required: false
         type: string
       persisted_documents_artifact:
-        description: 'Name of the persisted documents artifact to deploy'
+        description: 'Name of the persisted documents artifact to deploy to the root'
         required: false
         type: string
       msdeploy_server_url:

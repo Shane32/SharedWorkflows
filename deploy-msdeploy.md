@@ -7,9 +7,10 @@ This reusable GitHub Actions workflow automates the process of deploying applica
 The **Deploy with MSDeploy** workflow includes the following features:
 
 - **Artifact Deployment**:
-  - Downloads and deploys .NET application artifacts
-  - Optionally deploys SPA artifacts to the wwwroot folder
+  - Downloads and deploys artifacts to the root of the IIS site
+  - Optionally deploys SPA artifacts to the wwwroot subfolder (for combined .NET+SPA deployments)
   - Optionally deploys persisted documents file(s) to the root folder
+  - Supports SPA-only deployments by using `artifact_name` instead of `spa_artifact`
 
 - **IIS Integration**:
   - Uses MSDeploy (Microsoft Web Deploy) for deployment
@@ -28,9 +29,9 @@ The **Deploy with MSDeploy** workflow includes the following features:
 | **Input Name**                 | **Description**                                           | **Required** | **Default Value** |
 |--------------------------------|-----------------------------------------------------------|--------------|-------------------|
 | `environment_name`             | Environment name for deployment                           | Yes          | None              |
-| `artifact_name`                | Name of the .NET artifact to deploy                       | No           | `.net-app`        |
-| `spa_artifact`                 | Name of the SPA artifact to deploy in wwwroot folder      | No           | None              |
-| `persisted_documents_artifact` | Name of the persisted documents artifact to deploy        | No           | None              |
+| `artifact_name`                | Name of the artifact to deploy to the root of the site    | No           | `.net-app`        |
+| `spa_artifact`                 | Name of the SPA artifact to deploy to wwwroot subfolder (for combined .NET+SPA) | No | None |
+| `persisted_documents_artifact` | Name of the persisted documents artifact to deploy to root | No          | None              |
 | `msdeploy_server_url`          | MSDeploy server URL for deployment                        | No           | None              |
 | `msdeploy_site_name`           | IIS site name for deployment                              | No           | None              |
 | `msdeploy_username`            | Username for MSDeploy authentication                      | No           | None              |
@@ -129,8 +130,10 @@ jobs:
 - The workflow runs on Windows runners as MSDeploy is a Windows-based tool
 - Basic authentication is used for MSDeploy connections
 - The `msdeploy_allow_untrusted` option should only be set to `true` for development/staging environments with self-signed certificates
-- SPA artifacts are automatically deployed to the wwwroot folder when specified
-- Persisted document artifacts are automatically deployed to the root folder when specified
+- The main artifact (via `artifact_name`) deploys to the root of the IIS site
+- SPA artifacts (via `spa_artifact`) deploy to the wwwroot subfolder - use this for combined .NET+SPA deployments
+- For SPA-only deployments, use `artifact_name` to deploy the SPA to the root instead of using `spa_artifact`
+- Persisted document artifacts automatically deploy to the root folder when specified
 - All artifacts must be previously created and available in the workflow run
 - The workflow uses DoNotDeleteRule to preserve files not in the source package
 - The workflow uses AppOffline rule to take the application offline during deployment
