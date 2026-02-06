@@ -138,21 +138,33 @@ jobs:
           $password  = $env:MSDEPLOY_PASSWORD -replace '"', '\"'
           
           Write-Host "🚀 Deploying to IIS site: $env:MSDEPLOY_SITE_NAME"
+          Write-Host "📂 Current working directory: $PWD"
+          
+          # Get fully qualified path for deploy-package
+          $deployPackagePath = Join-Path $PWD "deploy-package"
+          $deployPackagePath = $deployPackagePath -replace '"', '\"'
+          
+          Write-Host "📦 Deploy package path: $deployPackagePath"
           
           $arguments = @(
             '-verb:sync'
-            '-source:contentPath="deploy-package"'
+            "-source:contentPath=""$deployPackagePath"""
             "-dest:contentPath=""$siteName"",computerName=""$serverUrl"",username=""$username"",password=""$password"",authType=Basic"
             '-enableRule:AppOffline'
           )
           
           if ($env:MSDEPLOY_DO_NOT_DELETE -eq 'true') {
             $arguments += '-enableRule:DoNotDeleteRule'
+            Write-Host "✅ DoNotDeleteRule enabled"
           }
           
           if ($env:MSDEPLOY_ALLOW_UNTRUSTED -eq 'true') {
             $arguments += '-allowUntrusted'
+            Write-Host "⚠️  Allow untrusted certificates enabled"
           }
+          
+          Write-Host "🔧 MSDeploy arguments:"
+          $arguments | ForEach-Object { Write-Host "   $_" }
           
           # Use Start-Process for proper argument handling
           $process = Start-Process -FilePath $msdeployPath -ArgumentList $arguments -Wait -NoNewWindow -PassThru
