@@ -26,7 +26,9 @@ The **Publish Application** workflow includes the following features:
   - Workflow steps are conditionally executed based on the inputs provided.
   - Skips .NET steps if `dotnet_folder` is not specified.
   - Skips SPA steps if `spa_folder` is not specified.
-  - Deployment jobs run based on the `deployment_method` input.
+  - Build jobs run regardless of whether Azure credentials are configured.
+  - Deployment jobs only run if Azure credentials are provided.
+  - Release assets are created whenever builds run, regardless of deployment configuration.
 
 ## Configuration Options
 
@@ -92,7 +94,7 @@ The workflow requires the following Azure configuration values to be provided ei
 | `AZURE_STORAGE_ACCOUNT`   | Azure Storage account name for deployment (`azure-storage` method)   | Required if `deployment_method` is `azure-storage` | None         |
 | `AZURE_STORAGE_CONTAINER` | Azure Storage container name for deployment (`azure-storage` method) | Required if `deployment_method` is `azure-storage` | None         |
 
-The workflow will first check for values provided as inputs, and if not found, will fall back to repository or environment variables. If neither is available, the workflow will skip deployment steps.
+The workflow will first check for values provided as inputs, and if not found, will fall back to repository or environment variables. If neither is available, the workflow will skip deployment steps but will still build the application and create release assets.
 
 ### Secrets
 

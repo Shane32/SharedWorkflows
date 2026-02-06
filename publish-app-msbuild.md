@@ -27,7 +27,9 @@ The **Publish Application with MSDeploy** workflow includes the following featur
   - Workflow steps are conditionally executed based on the inputs provided.
   - Skips .NET steps if `dotnet_folder` is not specified.
   - Skips SPA steps if `spa_folder` is not specified.
-  - Deployment jobs run based on what was built.
+  - Build jobs run regardless of whether MSDeploy is configured.
+  - Deployment jobs only run if MSDeploy configuration is provided.
+  - Release assets are created whenever builds run, regardless of deployment configuration.
 
 ## Configuration Options
 
@@ -87,7 +89,7 @@ The workflow requires the following MSDeploy configuration values to be provided
 | `MSDEPLOY_USERNAME`     | Username for MSDeploy authentication   | No (will skip deployment if not specified) | None              |
 | `MSDEPLOY_PASSWORD`     | Password for MSDeploy authentication   | No (will skip deployment if not specified) | None              |
 
-The workflow will first check for values provided as inputs, and if not found, will fall back to repository or environment variables. If neither is available, the workflow will skip deployment steps.
+The workflow will first check for values provided as inputs, and if not found, will fall back to repository or environment variables. If neither is available, the workflow will skip deployment steps but will still build the application and create release assets.
 
 ### Secrets
 

@@ -128,8 +128,7 @@ jobs:
 
   build_dotnet:
     name: Build .NET Backend
-    needs: check_msdeploy_config
-    if: inputs.dotnet_folder && needs.check_msdeploy_config.outputs.has_config == 'true'
+    if: inputs.dotnet_folder
     uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@2.3.0
     with:
       dotnet_folder: ${{ inputs.dotnet_folder }}
@@ -143,8 +142,7 @@ jobs:
 
   build_spa:
     name: Build SPA
-    needs: check_msdeploy_config
-    if: inputs.spa_folder && needs.check_msdeploy_config.outputs.has_config == 'true'
+    if: inputs.spa_folder
     uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@2.3.0
     with:
       spa_folder: ${{ inputs.spa_folder }}
