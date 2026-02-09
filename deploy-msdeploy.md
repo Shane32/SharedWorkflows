@@ -170,3 +170,16 @@ The IIS site name should match the exact name of the website or application in I
 ```text
 SiteName/ApplicationName
 ```
+
+## Setting Up MSDeploy with IIS User Accounts
+
+For detailed instructions on configuring MSDeploy using IIS Manager user accounts (instead of Windows accounts), including Management Service Delegation configuration and proper permissions setup, see:
+
+**[Configure MSDeploy with IIS User Account](configure-msdeploy-iis-user.md)**
+
+This guide covers:
+- Creating IIS Manager users for deployment
+- Configuring Management Service Delegation rules
+- Setting up IIS Manager Permissions for sites and applications
+- Configuring file system permissions for LOCAL SERVICE
+- Understanding MSDeploy URL construction
