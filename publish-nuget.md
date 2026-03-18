@@ -106,6 +106,7 @@ jobs:
     uses: Shane32/SharedWorkflows/.github/workflows/publish-nuget.yml@v2
     permissions:
       contents: write
+      packages: write
     with:
       dotnet_folder: '.'
     secrets:
@@ -133,6 +134,7 @@ jobs:
     uses: Shane32/SharedWorkflows/.github/workflows/publish-nuget.yml@v2
     permissions:
       contents: write
+      packages: write
     with:
       dotnet_folder: '.'
     secrets:
@@ -241,4 +243,5 @@ For individual library projects that should be packaged, set `IsPackable` to `tr
 - The workflow runs on Ubuntu latest
 - Authentication is automatically configured based on the target repository
 - For GitHub Packages, the repository owner is automatically extracted from the GitHub context
-- `permissions: contents: write` is necessary to upload nuget packages as release assets
+- `permissions: contents: write` is necessary to upload NuGet packages as release assets
+- `permissions: packages: write` is necessary to upload NuGet packages to GitHub Packages
