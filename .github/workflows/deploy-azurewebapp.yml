@@ -40,6 +40,11 @@ on:
         description: 'Azure Web App slot name for deployment'
         required: false
         type: string
+      delete_destination:
+        description: 'Delete destination folder before deployment (maps to the clean input of azure/webapps-deploy)'
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   deploy_azurewebapp:
@@ -114,3 +119,4 @@ jobs:
           app-name: ${{ inputs.azure_webapp_name || vars.AZURE_WEBAPP_NAME }}
           slot-name: ${{ inputs.azure_webapp_slot_name || vars.AZURE_WEBAPP_SLOT_NAME || 'Production' }}
           package: .
+          clean: ${{ inputs.delete_destination }}
