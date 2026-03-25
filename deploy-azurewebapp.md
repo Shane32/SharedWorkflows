@@ -35,6 +35,7 @@ The **Deploy Azure Web App** workflow includes the following features:
 | `azure_subscription_id`        | Subscription ID for Azure deployment                      | No           | None              |
 | `azure_webapp_name`            | Azure Web App name for deployment                         | No           | None              |
 | `azure_webapp_slot_name`       | Azure Web App slot name for deployment                    | No           | None              |
+| `delete_destination`           | Empty destination folder before deployment                | No           | `true`            |
 
 ### Required Variables or Inputs
 
