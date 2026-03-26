@@ -72,7 +72,6 @@ The **Publish Application** workflow includes the following features:
 | `azure_webapp_slot_name`  | Azure Web App slot name for deployment            | No           | None              |
 | `azure_storage_account`   | Azure Storage account name for deployment         | No           | None              |
 | `azure_storage_container` | Azure Storage container name for deployment       | No           | None              |
-| `delete_destination`      | Empty destination folder before deployment        | No           | `true`            |
 
 ### Environment Variables
 
@@ -208,4 +207,4 @@ The above example assumes that the necessary Azure configuration values are stor
 - `permissions: contents: write` is necessary to upload the compiled application as a release asset
 
 > [!WARNING]
-> By default, `delete_destination` is set to `true`, which deletes all existing files in the destination folder before deploying the updated application code. This will permanently delete any local databases (e.g., SQLite `.db` files) or other data files stored on the server. Set `delete_destination: false` if the application stores data locally on the server that must be preserved across deployments.
+> While deploying the .NET application, this will delete all existing files in the destination folder before deploying the updated application code. This will permanently delete any local databases (e.g., SQLite `.db` files) or other data files stored on the server.
