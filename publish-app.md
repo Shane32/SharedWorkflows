@@ -205,3 +205,6 @@ The above example assumes that the necessary Azure configuration values are stor
 - `global.json` is required
 - Cannot override .NET SDK with another version or install multiple SDKs
 - `permissions: contents: write` is necessary to upload the compiled application as a release asset
+
+> [!WARNING]
+> While deploying the .NET application, this will delete all existing files in the destination folder before deploying the updated application code. This will permanently delete any local databases (e.g., SQLite `.db` files) or other data files stored on the server.
