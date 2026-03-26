@@ -202,7 +202,7 @@ jobs:
     name: Deploy to Azure Web App
     needs: [build_dotnet, check_azure_tokens]
     if: inputs.dotnet_folder && needs.check_azure_tokens.outputs.has_webapp_name && !inputs.spa_folder
-    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@2.3.0
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@2.4.0
     with:
       environment_name: ${{ inputs.environment_name }}
       azure_client_id: ${{ inputs.azure_client_id }}
@@ -215,7 +215,7 @@ jobs:
     name: Deploy to Azure Web App
     needs: [build_dotnet, build_spa, check_azure_tokens]
     if: inputs.dotnet_folder && needs.check_azure_tokens.outputs.has_webapp_name && inputs.spa_folder
-    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@2.3.0
+    uses: Shane32/SharedWorkflows/.github/workflows/deploy-azurewebapp.yml@2.4.0
     with:
       spa_artifact: ${{ inputs.spa_deployment_method == 'azure-webapp' && '.spa-app' || '' }}
       persisted_documents_artifact: ${{ inputs.persisted_documents_file && 'persisted-documents' || '' }}
