@@ -115,3 +115,6 @@ The above example shows how to provide Azure configuration values as workflow in
 - SPA artifacts are automatically deployed to the wwwroot folder when specified
 - Perisisted document artifacts are automatically deployed to the root folder when specified
 - All artifacts must be previously created and available in the workflow run
+
+> [!WARNING]
+> By default, `delete_destination` is set to `true`, which deletes all existing files in the destination folder before deploying the updated application code. This will permanently delete any local databases (e.g., SQLite `.db` files) or other data files stored on the server. Set `delete_destination: false` if the application stores data locally on the server that must be preserved across deployments.

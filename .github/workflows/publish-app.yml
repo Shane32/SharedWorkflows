@@ -103,6 +103,11 @@ on:
         description: 'Azure Web App slot name for deployment'
         required: false
         type: string
+      delete_destination:
+        description: 'Empty destination folder before deployment'
+        required: false
+        type: boolean
+        default: true
 
     secrets:
       # NuGet Secrets
@@ -210,6 +215,7 @@ jobs:
       azure_subscription_id: ${{ inputs.azure_subscription_id }}
       azure_webapp_name: ${{ inputs.azure_webapp_name }}
       azure_webapp_slot_name: ${{ inputs.azure_webapp_slot_name }}
+      delete_destination: ${{ inputs.delete_destination }}
 
   deploy_webapp_combination:
     name: Deploy to Azure Web App
@@ -225,6 +231,7 @@ jobs:
       azure_subscription_id: ${{ inputs.azure_subscription_id }}
       azure_webapp_name: ${{ inputs.azure_webapp_name }}
       azure_webapp_slot_name: ${{ inputs.azure_webapp_slot_name }}
+      delete_destination: ${{ inputs.delete_destination }}
 
   deploy_azurestorage:
     name: Deploy SPA to Azure Storage
