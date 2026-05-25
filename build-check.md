@@ -156,3 +156,4 @@ jobs:
 - The necessary secrets should already be configured as organization secrets.
 - `global.json` is required for formatting checks; for build/test, `dotnet_version` may be specified instead
 - Test settings XML file is only used if it exists (defaults to `testsettings.xml`)
+- Coverage report and coverage-monitoring steps are skipped when no `coverage.info` file is found

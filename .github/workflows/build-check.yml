@@ -237,7 +237,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Find coverage.info files
-        if: inputs.coveralls
+        if: inputs.coveralls || (((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request')
         id: find-coverage
         shell: bash
         working-directory: ${{ inputs.dotnet_folder }}
@@ -260,13 +260,13 @@ jobs:
           path-to-lcov: ${{ steps.find-coverage.outputs.coverage_files }}
 
       - name: Copy coverage files
-        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request'
+        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request' && steps.find-coverage.outputs.has_coverage == 'true'
         shell: bash
         working-directory: ${{ inputs.dotnet_folder }}/TestResults
         run: find . -type f -exec cp {} .. \;
 
       - name: Convert coverage report to Clover & HtmlSummary format
-        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request'
+        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request' && steps.find-coverage.outputs.has_coverage == 'true'
         uses: danielpalme/ReportGenerator-GitHub-Action@4.8.12
         with:
           reports: 'coverage.info'
@@ -275,7 +275,7 @@ jobs:
           tag: 'test_${{ github.run_number }}'
 
       - name: Convert coverage report to HTML
-        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request'
+        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request' && steps.find-coverage.outputs.has_coverage == 'true'
         uses: danielpalme/ReportGenerator-GitHub-Action@4.8.12
         with:
           reports: 'coverage.info'
@@ -284,7 +284,7 @@ jobs:
           tag: 'test_${{ github.run_number }}'
 
       - name: Upload artifacts
-        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request'
+        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request' && steps.find-coverage.outputs.has_coverage == 'true'
         uses: actions/upload-artifact@v6
         with:
           name: Code Coverage Artifacts
@@ -295,7 +295,7 @@ jobs:
             ${{ inputs.dotnet_folder }}/summary.html
 
       - name: Monitor coverage
-        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request'
+        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request' && steps.find-coverage.outputs.has_coverage == 'true'
         continue-on-error: true
         uses: slavcodev/coverage-monitor-action@1.2.0
         with:
