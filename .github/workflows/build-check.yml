@@ -251,7 +251,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Find coverage.info files
-        if: inputs.coveralls || steps.check-coverage-report.outputs.should_run == 'true'
+        if: inputs.coveralls || (steps.check-coverage-report.outputs.should_run == 'true')
         id: find-coverage
         shell: bash
         working-directory: ${{ inputs.dotnet_folder }}
