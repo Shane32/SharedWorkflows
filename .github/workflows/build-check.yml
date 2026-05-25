@@ -218,73 +218,87 @@ jobs:
             --results-directory ./TestResults
         working-directory: ${{ inputs.dotnet_folder }}
 
-      - name: Check if CODECOV_TOKEN is defined
-        id: check_codecov_token
+      - name: Compute coverage flags
+        id: coverage
         shell: bash
         run: |
-          if [ -z "${{ secrets.CODECOV_TOKEN }}" ]; then
-            echo "has_codecov_token=false" >> $GITHUB_OUTPUT
+          # Determine if Codecov token is available
+          if [ -n "${{ secrets.CODECOV_TOKEN }}" ]; then
+            has_codecov_token=true
           else
-            echo "has_codecov_token=true" >> $GITHUB_OUTPUT
+            has_codecov_token=false
           fi
 
+          # Determine if the built-in PR coverage report should run:
+          #   - coverage_report == 'true'  → yes, unless Codecov is active (Codecov produces its own report)
+          #   - coverage_report == ''      → only if Codecov is not active and this is a PR
+          #   - coverage_report == 'false' → never
+          # Note: enabling Codecov always disables the built-in coverage_report steps,
+          #       since Codecov produces its own coverage report.
+          if [ "${{ inputs.coverage_report }}" = "false" ] || [ "$has_codecov_token" = "true" ]; then
+            run_pr_report=false
+          elif [ "${{ inputs.coverage_report }}" = "true" ] || [ "${{ github.event_name }}" = "pull_request" ]; then
+            run_pr_report=true
+          else
+            run_pr_report=false
+          fi
+
+          # Find lcov coverage files
+          files=$(find "${{ inputs.dotnet_folder }}/TestResults" -type f -name 'coverage.info' 2>/dev/null | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+          if [ -n "$files" ]; then
+            has_coverage=true
+            echo "Found coverage files: $files"
+          else
+            has_coverage=false
+            echo "No coverage.info files found"
+          fi
+
+          echo "has_codecov_token=$has_codecov_token" >> "$GITHUB_OUTPUT"
+          echo "run_pr_report=$run_pr_report"         >> "$GITHUB_OUTPUT"
+          echo "has_coverage=$has_coverage"           >> "$GITHUB_OUTPUT"
+          echo "coverage_files=$files"                >> "$GITHUB_OUTPUT"
+
       - name: Upload coverage to Codecov
-        if: steps.check_codecov_token.outputs.has_codecov_token == 'true'
+        if: steps.coverage.outputs.has_codecov_token == 'true'
         uses: codecov/codecov-action@v5
         with:
           verbose: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-      - name: Find coverage.info files
-        if: inputs.coveralls || (((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request')
-        id: find-coverage
-        shell: bash
-        working-directory: ${{ inputs.dotnet_folder }}
-        run: |
-          files=$(find TestResults -type f -name 'coverage.info' 2>/dev/null | tr '\n' ' ' | sed 's/[[:space:]]*$//')
-          if [ -n "$files" ]; then
-            echo "coverage_files=$files" >> "$GITHUB_OUTPUT"
-            echo "has_coverage=true" >> "$GITHUB_OUTPUT"
-            echo "Found coverage files: $files"
-          else
-            echo "has_coverage=false" >> "$GITHUB_OUTPUT"
-            echo "No coverage.info files found"
-          fi
-
       - name: Upload coverage to Coveralls
-        if: inputs.coveralls && steps.find-coverage.outputs.has_coverage == 'true'
+        if: inputs.coveralls && steps.coverage.outputs.has_coverage == 'true'
         uses: coverallsapp/github-action@v1.1.2   # can't get v2 to work
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: ${{ steps.find-coverage.outputs.coverage_files }}
+          path-to-lcov: ${{ steps.coverage.outputs.coverage_files }}
 
       - name: Copy coverage files
-        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request' && steps.find-coverage.outputs.has_coverage == 'true'
+        if: steps.coverage.outputs.run_pr_report == 'true' && steps.coverage.outputs.has_coverage == 'true'
         shell: bash
         working-directory: ${{ inputs.dotnet_folder }}/TestResults
         run: find . -type f -exec cp {} .. \;
 
       - name: Convert coverage report to Clover & HtmlSummary format
-        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request' && steps.find-coverage.outputs.has_coverage == 'true'
+        if: steps.coverage.outputs.run_pr_report == 'true' && steps.coverage.outputs.has_coverage == 'true'
         uses: danielpalme/ReportGenerator-GitHub-Action@4.8.12
         with:
-          reports: 'coverage.info'
+          reports: '${{ inputs.dotnet_folder }}/coverage.info'
           targetdir: ${{ inputs.dotnet_folder }}
           reporttypes: 'Clover;HtmlSummary'
           tag: 'test_${{ github.run_number }}'
 
       - name: Convert coverage report to HTML
-        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request' && steps.find-coverage.outputs.has_coverage == 'true'
+        if: steps.coverage.outputs.run_pr_report == 'true' && steps.coverage.outputs.has_coverage == 'true'
         uses: danielpalme/ReportGenerator-GitHub-Action@4.8.12
         with:
-          reports: 'coverage.info'
+          reports: '${{ inputs.dotnet_folder }}/coverage.info'
           targetdir: '${{ inputs.dotnet_folder }}/cloverreport'
           reporttypes: 'Html'
           tag: 'test_${{ github.run_number }}'
 
       - name: Upload artifacts
-        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request' && steps.find-coverage.outputs.has_coverage == 'true'
+        if: steps.coverage.outputs.run_pr_report == 'true' && steps.coverage.outputs.has_coverage == 'true'
         uses: actions/upload-artifact@v6
         with:
           name: Code Coverage Artifacts
@@ -295,7 +309,7 @@ jobs:
             ${{ inputs.dotnet_folder }}/summary.html
 
       - name: Monitor coverage
-        if: ((inputs.coverage_report == '' && steps.check_codecov_token.outputs.has_codecov_token != 'true') || inputs.coverage_report == 'true') && github.event_name == 'pull_request' && steps.find-coverage.outputs.has_coverage == 'true'
+        if: steps.coverage.outputs.run_pr_report == 'true' && steps.coverage.outputs.has_coverage == 'true'
         continue-on-error: true
         uses: slavcodev/coverage-monitor-action@1.2.0
         with:
