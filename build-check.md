@@ -41,6 +41,7 @@ The `Build Check` workflow includes:
 | `dotnet_build_runner`   | Runner for .NET builds                    | No           | `ubuntu-latest`         | Specifies the runner for .NET builds and tests |
 | `dotnet_format_severity`| .NET format severity level                | No           | `error`                 | Controls formatting validation severity        |
 | `global_json_folder`    | Path to the folder containing global.json | No           | `.`                     | Ignores `dotnet_folder` when resolving path    |
+| `dotnet_version`        | .NET SDK version to use                   | No           | None                    | Overrides `global_json_folder` when specified  |
 | `nuget_accounts`        | NuGet Accounts to configure               | No           | Repository owner        | Skipped if tokens are not provided             |
 | `npm_accounts`          | NPM Accounts to configure                 | No           | Repository owner        | Skipped if tokens are not provided             |
 | `dotnet_test_settings`  | .NET test settings XML file location      | No           | `testsettings.xml`      | Only used if file exists                       |
@@ -153,6 +154,5 @@ jobs:
 ## Notes
 
 - The necessary secrets should already be configured as organization secrets.
-- `global.json` is required
-- Cannot override .NET SDK with another version or install multiple SDKs
+- `global.json` is required unless `dotnet_version` is specified
 - Test settings XML file is only used if it exists (defaults to `testsettings.xml`)
