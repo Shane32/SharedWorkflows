@@ -323,6 +323,9 @@ jobs:
       contents: read
       pull-requests: write
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
       - name: Download test results artifact
         uses: actions/download-artifact@v8
         with:
