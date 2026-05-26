@@ -94,6 +94,8 @@ jobs:
     with:
       dotnet_folder: '.'
       dotnet_build_runner: 'windows-latest'
+      data_collector: XPlat Code Coverage
+      codecov: true
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
@@ -109,13 +111,16 @@ name: Upload Coverage
 
 on:
   push:
-    - master
+    branches:
+      - master
 
 jobs:
   build-check:
     uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v2
     with:
       dotnet_folder: '.'
+      data_collector: XPlat Code Coverage
+      codecov: true
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
@@ -141,6 +146,7 @@ jobs:
     uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v2
     with:
       dotnet_folder: '.'
+      data_collector: XPlat Code Coverage
       spa_folder: 'ReactApp'
       npm_analyze_script: 'analyze'
       analysis_artifacts: 'ReactApp/stats.html'
@@ -148,12 +154,10 @@ jobs:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 ```
 
 ## Notes
 
 - The necessary secrets should already be configured as organization secrets.
 - `global.json` is required for formatting checks; for build/test, `dotnet_version` may be specified instead
-- Coverage report and coverage-monitoring steps are skipped when no `coverage.info` file is found
 - To use custom run settings (e.g. for additional coverage configuration), set `RunSettingsFilePath` in the `.csproj` file; for example: `<RunSettingsFilePath>$(MSBuildThisFileDirectory)test.runsettings</RunSettingsFilePath>`
