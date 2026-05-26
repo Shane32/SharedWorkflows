@@ -272,6 +272,9 @@ jobs:
     needs: build_net
     if: needs.build_net.outputs.has_codecov_token == 'true' && needs.build_net.outputs.has_coverage == 'true'
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
       - name: Download test results artifact
         uses: actions/download-artifact@v8
         with:
@@ -290,6 +293,9 @@ jobs:
     needs: build_net
     if: inputs.coveralls && needs.build_net.outputs.has_coverage == 'true'
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
       - name: Download test results artifact
         uses: actions/download-artifact@v8
         with:
