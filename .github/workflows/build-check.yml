@@ -101,7 +101,6 @@ on:
         description: 'Data collector for dotnet test'
         required: false
         type: string
-        default: 'XPlat Code Coverage'
       coveralls:
         description: 'Enable Coveralls support'
         required: false
