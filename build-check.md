@@ -44,12 +44,12 @@ The `Build Check` workflow includes:
 | `dotnet_version`        | .NET SDK version to use                   | No           | None                    | Overrides `global_json_folder` for build/test; formatting always uses `global_json_folder` |
 | `nuget_accounts`        | NuGet Accounts to configure               | No           | Repository owner        | Skipped if tokens are not provided             |
 | `npm_accounts`          | NPM Accounts to configure                 | No           | Repository owner        | Skipped if tokens are not provided             |
-| `data_collector`        | Data collector for dotnet test            | No           | None                    | Use `XPlat Code Coverage;Format=lcov` for lcov output; if blank then setting is not applied |
+| `data_collector`        | Data collector for dotnet test            | No           | None (don't collect)    | e.g. `XPlat Code Coverage`                     |
 | `codecov`               | Enable Codecov support                    | No           | `false`                 | Uploads coverage data to Codecov; disables local coverage report |
 | `coveralls`             | Enable Coveralls support                  | No           | `false`                 | Uploads coverage data to Coveralls; disables local coverage report |
 | `coverage_alert_threshold` | Coverage alert threshold               | No           | 20                      |                                                |
 | `coverage_warning_threshold` | Coverage warning threshold           | No           | 80                      |                                                |
-| `coverage_report`       | Enable or disable local coverage report   | No           | Automatic               | Runs when test results are present and both `codecov` and `coveralls` are disabled |
+| `coverage_report`       | Enable or disable local coverage report   | No           | `true`                  | Reporting skipped if `codecov` or `coveralls` are used |
 
 ### SPA Options
 
