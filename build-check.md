@@ -44,12 +44,12 @@ The `Build Check` workflow includes:
 | `dotnet_version`        | .NET SDK version to use                   | No           | None                    | Overrides `global_json_folder` for build/test; formatting always uses `global_json_folder` |
 | `nuget_accounts`        | NuGet Accounts to configure               | No           | Repository owner        | Skipped if tokens are not provided             |
 | `npm_accounts`          | NPM Accounts to configure                 | No           | Repository owner        | Skipped if tokens are not provided             |
-| `dotnet_test_settings`  | .NET test settings XML file location      | No           | `testsettings.xml`      | Only used if file exists                       |
-| `data_collector`        | Data collector for dotnet test            | No           | `XPlat Code Coverage`   | If blank then setting is not applied           |
-| `coveralls`             | Enable Coveralls support                  | No           | `false`                 |                                                |
+| `data_collector`        | Data collector for dotnet test            | No           | None                    | Use `XPlat Code Coverage;Format=lcov` for lcov output; if blank then setting is not applied |
+| `codecov`               | Enable Codecov support                    | No           | `false`                 | Uploads coverage data to Codecov; disables local coverage report |
+| `coveralls`             | Enable Coveralls support                  | No           | `false`                 | Uploads coverage data to Coveralls; disables local coverage report |
 | `coverage_alert_threshold` | Coverage alert threshold               | No           | 20                      |                                                |
 | `coverage_warning_threshold` | Coverage warning threshold           | No           | 80                      |                                                |
-| `coverage_report`       | Enable or disable local coverage report   | No           | Automatic               | By default it is disabled when codecov is used |
+| `coverage_report`       | Enable or disable local coverage report   | No           | Automatic               | Runs when test results are present and both `codecov` and `coveralls` are disabled |
 
 ### SPA Options
 
@@ -155,5 +155,5 @@ jobs:
 
 - The necessary secrets should already be configured as organization secrets.
 - `global.json` is required for formatting checks; for build/test, `dotnet_version` may be specified instead
-- Test settings XML file is only used if it exists (defaults to `testsettings.xml`)
 - Coverage report and coverage-monitoring steps are skipped when no `coverage.info` file is found
+- To use custom run settings (e.g. for additional coverage configuration), set `RunSettingsFilePath` in the `.csproj` file; for example: `<RunSettingsFilePath>$(MSBuildThisFileDirectory)test.runsettings</RunSettingsFilePath>`
