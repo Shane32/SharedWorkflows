@@ -296,10 +296,18 @@ jobs:
         with:
           name: TestResults
 
+      - name: Collect coverage files
+        id: collect_coverage
+        shell: bash
+        run: |
+          files=$(find . -type f -name 'coverage.info' | tr '\n' ' ' | sed 's/ $//')
+          echo "files=$files" >> "$GITHUB_OUTPUT"
+
       - name: Upload coverage to Coveralls
         uses: coverallsapp/github-action@v2.3.6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          files: ${{ steps.collect_coverage.outputs.files }}
 
   coverage_report:
     name: Coverage Report
