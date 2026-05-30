@@ -90,7 +90,7 @@ concurrency:
 
 jobs:
   build-check:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v3
     with:
       dotnet_folder: '.'
       dotnet_build_runner: 'windows-latest'
@@ -116,7 +116,7 @@ on:
 
 jobs:
   build-check:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v3
     with:
       dotnet_folder: '.'
       data_collector: XPlat Code Coverage
@@ -143,7 +143,7 @@ concurrency:
 
 jobs:
   build-check:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v3
     with:
       dotnet_folder: '.'
       data_collector: XPlat Code Coverage
