@@ -44,12 +44,12 @@ The `Build Check` workflow includes:
 | `dotnet_version`        | .NET SDK version to use                   | No           | None                    | Overrides `global_json_folder` for build/test; formatting always uses `global_json_folder` |
 | `nuget_accounts`        | NuGet Accounts to configure               | No           | Repository owner        | Skipped if tokens are not provided             |
 | `npm_accounts`          | NPM Accounts to configure                 | No           | Repository owner        | Skipped if tokens are not provided             |
-| `dotnet_test_settings`  | .NET test settings XML file location      | No           | `testsettings.xml`      | Only used if file exists                       |
-| `data_collector`        | Data collector for dotnet test            | No           | `XPlat Code Coverage`   | If blank then setting is not applied           |
-| `coveralls`             | Enable Coveralls support                  | No           | `false`                 |                                                |
+| `data_collector`        | Data collector for dotnet test            | No           | None (don't collect)    | e.g. `XPlat Code Coverage`                     |
+| `codecov`               | Enable Codecov support                    | No           | `false`                 | Uploads coverage data to Codecov; disables local coverage report |
+| `coveralls`             | Enable Coveralls support                  | No           | `false`                 | Uploads coverage data to Coveralls; disables local coverage report |
 | `coverage_alert_threshold` | Coverage alert threshold               | No           | 20                      |                                                |
 | `coverage_warning_threshold` | Coverage warning threshold           | No           | 80                      |                                                |
-| `coverage_report`       | Enable or disable local coverage report   | No           | Automatic               | By default it is disabled when codecov is used |
+| `coverage_report`       | Enable or disable local coverage report   | No           | `true`                  | Reporting skipped if `codecov` or `coveralls` are used |
 
 ### SPA Options
 
@@ -90,10 +90,12 @@ concurrency:
 
 jobs:
   build-check:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v3
     with:
       dotnet_folder: '.'
       dotnet_build_runner: 'windows-latest'
+      data_collector: XPlat Code Coverage
+      codecov: true
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
@@ -109,13 +111,16 @@ name: Upload Coverage
 
 on:
   push:
-    - master
+    branches:
+      - master
 
 jobs:
   build-check:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v3
     with:
       dotnet_folder: '.'
+      data_collector: XPlat Code Coverage
+      codecov: true
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
@@ -138,9 +143,10 @@ concurrency:
 
 jobs:
   build-check:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/build-check.yml@v3
     with:
       dotnet_folder: '.'
+      data_collector: XPlat Code Coverage
       spa_folder: 'ReactApp'
       npm_analyze_script: 'analyze'
       analysis_artifacts: 'ReactApp/stats.html'
@@ -148,11 +154,10 @@ jobs:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 ```
 
 ## Notes
 
 - The necessary secrets should already be configured as organization secrets.
 - `global.json` is required for formatting checks; for build/test, `dotnet_version` may be specified instead
-- Test settings XML file is only used if it exists (defaults to `testsettings.xml`)
+- To use custom run settings (e.g. for additional coverage configuration), set `RunSettingsFilePath` in the `.csproj` file; for example: `<RunSettingsFilePath>$(MSBuildThisFileDirectory)test.runsettings</RunSettingsFilePath>`
