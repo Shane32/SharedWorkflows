@@ -42,7 +42,7 @@ The **Build .NET Application** workflow includes the following features:
 
 ### Environment Variables
 
-If an environment is configured, variables configured for the specified environment are used as environment variables when building the SPA.
+If an environment is configured, variables configured for the specified environment are used as environment variables when building the .NET application. Multiline values, such as PEM public keys, retain their line breaks during export.
 
 ### Secrets
 
