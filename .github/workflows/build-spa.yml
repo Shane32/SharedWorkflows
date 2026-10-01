@@ -89,12 +89,19 @@ jobs:
         if: inputs.environment_name != ''
         env:
           ALL_VARS: ${{ toJson(vars) }}
+        shell: python
         run: |
-          if [ "$ALL_VARS" != "null" ]; then
-            echo "$ALL_VARS" | jq -r 'to_entries[] | "\(.key)=\(.value)"' >> $GITHUB_ENV
-          else
-            echo "No vars to export"
-          fi
+          import json
+          import os
+          import uuid
+
+          variables = json.loads(os.environ["ALL_VARS"]) or {}
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as output:
+              for name, value in variables.items():
+                  delimiter = "ghenv_" + uuid.uuid4().hex
+                  while delimiter in value.splitlines():
+                      delimiter = "ghenv_" + uuid.uuid4().hex
+                  output.write(f"{name}<<{delimiter}\n{value}\n{delimiter}\n")
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
