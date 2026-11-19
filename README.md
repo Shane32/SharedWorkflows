@@ -13,6 +13,28 @@ See each workflow's respective readme for more details:
 - [Combination Build and Deploy Application workflow for both .NET and SPA code](publish-app.md)
 - [Publish Application with MSDeploy workflow for building and deploying .NET/SPA to IIS](publish-app-msbuild.md)
 
+## Artifact retention
+
+The `build-check`, `build-dotnet`, `build-spa`, `publish-app`, `publish-app-msbuild`, and `publish-nuget` workflows accept an optional numeric `retention-days` input. For example, keep the artifacts from a release build for seven days:
+
+```yaml
+jobs:
+  publish:
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app-msbuild.yml@v3
+    with:
+      dotnet_folder: 'MyAppServer'
+      environment_name: Production
+      retention-days: 7
+    secrets:
+      msdeploy_password: ${{ secrets.MSDEPLOY_PASSWORD }}
+```
+
+Omitting the input or setting it to `0` uses the calling repository's default retention. A positive value specifies the number of days to retain all Actions artifacts uploaded by that workflow, including build output, persisted documents, test results, coverage reports, and analysis files where applicable. The repository and organization retention limits still apply.
+
+Publishing workflows forward this setting to their build workflows. It applies to newly uploaded Actions artifacts; existing artifacts keep their expiration dates. It does not expire files attached to GitHub Releases or packages published to a package registry. See [GitHub's artifact retention documentation](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/remove-workflow-artifacts).
+
+The `@v3` examples require the tag to be updated to a release containing this input. Before that release, pin a commit containing the change. Older pinned versions, such as `2.3.0`, do not accept `retention-days`.
+
 ## Azure Permissions Setup
 
 Before using the deployment workflows, you'll need to configure the necessary Azure permissions and GitHub environments:
@@ -25,4 +47,5 @@ Before using the deployment workflows, you'll need to configure the necessary Az
 2. Issue release, bumping major version number for breaking changes
 3. Adjust/create 'v#' tag to point to new #.x.x release
 4. If updating the `add-nuget-sources` or `add-npm-sources` workflows, update references to them within the other workflows to use the new version number
-5. If updating the `build-spa`, `build-dotnet`, `deploy-azurewebapp` or `deploy-azurestorage` workflows, update references to them in the `publish-app` workflow to use the new version number
+5. If updating the `deploy-azurewebapp` or `deploy-azurestorage` workflows, update references to them in the `publish-app` workflow to use the new version number
+6. Keep the relative builder references in `publish-app`, `publish-app-msbuild`, and `publish-nuget` so each publishing workflow uses builder inputs and implementations from the same commit

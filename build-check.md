@@ -32,6 +32,7 @@ The `Build Check` workflow includes:
 |-------------------------|-------------------------------------------|--------------|-------------------------|--------------------------------------------|
 | `build`                 | Enable or disable build checks            | No           | `true`                  |                                            |
 | `format`                | Enable or disable formatting checks       | No           | Automatic               | By default only runs for pull requests     |
+| `retention-days`        | Days to retain test, coverage, and analysis artifacts | No | `0` | Uses repository retention when omitted or `0`; see [artifact retention](README.md#artifact-retention) |
 
 ### .NET Options
 
@@ -150,6 +151,7 @@ jobs:
       spa_folder: 'ReactApp'
       npm_analyze_script: 'analyze'
       analysis_artifacts: 'ReactApp/stats.html'
+      retention-days: 7
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}

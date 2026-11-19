@@ -37,6 +37,7 @@ The **Publish Application** workflow includes the following features:
 | **Input Name**         | **Description**                                                                     | **Required** | **Default Value**    |
 |------------------------|-------------------------------------------------------------------------------------|--------------|----------------------|
 | `environment_name`     | Specifies the GitHub environment to use while building and for Azure authentication | Yes          | None                 |
+| `retention-days`       | Days to retain Actions artifacts from the build workflows; see [artifact retention](README.md#artifact-retention) | No | `0` (repository default) |
 
 ### .NET Build Inputs
 
@@ -122,12 +123,13 @@ concurrency:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v3
     permissions:
       contents: write
       id-token: write
     with:
       dotnet_folder: '.'
+      retention-days: 7
       environment_name: Development
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
@@ -152,7 +154,7 @@ concurrency:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v3
     permissions:
       contents: write
       id-token: write
@@ -181,7 +183,7 @@ on:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v3
     permissions:
       contents: write
       id-token: write

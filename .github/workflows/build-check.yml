@@ -3,6 +3,11 @@ name: Build Check
 on:
   workflow_call:
     inputs:
+      retention-days:
+        description: 'Artifact retention in days; 0 uses the repository default.'
+        required: false
+        type: number
+        default: 0
       dotnet_folder:
         description: 'Path to the .NET project folder'
         required: false
@@ -188,6 +193,7 @@ jobs:
       - name: Upload test results artifact
         uses: actions/upload-artifact@v7
         with:
+          retention-days: ${{ inputs.retention-days }}
           name: TestResults
           path: ${{ inputs.dotnet_folder }}/TestResults
 
@@ -248,6 +254,7 @@ jobs:
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v7
         with:
+          retention-days: ${{ inputs.retention-days }}
           name: Code Coverage Artifacts
           path: coveragereport/**
 
@@ -301,6 +308,7 @@ jobs:
         if: inputs.analysis_artifacts != ''
         uses: actions/upload-artifact@v7
         with:
+          retention-days: ${{ inputs.retention-days }}
           name: Analysis Artifacts
           path: ${{ inputs.analysis_artifacts }}
 

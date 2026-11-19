@@ -36,6 +36,7 @@ The **Publish NuGet Package** workflow includes the following features:
 | `nuget_accounts`       | Comma-separated list of GitHub accounts for NuGet sources | No           | `default`           | Used during build for private packages |
 | `dotnet_configuration` | .NET build configuration (e.g., `Release`, `Debug`)       | No           | `Release`           |              |
 | `environment_name`     | Environment name for deployment                           | No           | None                |              |
+| `retention-days`       | Days to retain the Actions build artifact                 | No           | `0`                 | Uses repository retention when omitted or `0`; published packages and release assets are unaffected. See [artifact retention](README.md#artifact-retention) |
 | `publish_to_nuget`     | Force publishing to NuGet.org instead of GitHub Packages  | No           | `false`             | Requires `NUGET_AUTH_TOKEN` |
 
 ### Environment Variables
@@ -103,12 +104,13 @@ on:
 
 jobs:
   publish:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-nuget.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-nuget.yml@v3
     permissions:
       contents: write
       packages: write
     with:
       dotnet_folder: '.'
+      retention-days: 7
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
@@ -131,7 +133,7 @@ on:
 
 jobs:
   publish:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-nuget.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-nuget.yml@v3
     permissions:
       contents: write
       packages: write
