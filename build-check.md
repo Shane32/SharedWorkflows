@@ -162,7 +162,4 @@ jobs:
 - The necessary secrets should already be configured as organization secrets.
 - `global.json` is required for formatting checks; for build/test, `dotnet_version` may be specified instead
 - To use custom run settings (e.g. for additional coverage configuration), set `RunSettingsFilePath` in the `.csproj` file; for example: `<RunSettingsFilePath>$(MSBuildThisFileDirectory)test.runsettings</RunSettingsFilePath>`
-
-### Artifact retention
-
-`intermediate-retention-days` controls retention of raw `TestResults`, which feed the coverage job and can also be downloaded for diagnosis. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits. Generated coverage reports and analysis artifacts always use repository-default retention.
+- `intermediate-retention-days` controls retention of raw `TestResults`, which feed the coverage job and can also be downloaded for diagnosis. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits. Generated coverage reports and analysis artifacts always use repository-default retention.

@@ -152,7 +152,4 @@ jobs:
 - When using `persisted_documents_file`, the workflow will fail if the specified file is not found
 - The workflow runs in the specified environment context so custom environment variables can be added within GitHub's environment configuration
 - Analysis artifacts are only uploaded if both `npm_analyze_script` and `analysis_files` are provided
-
-### Artifact retention
-
-`intermediate-retention-days` controls retention of the SPA build output and optional persisted-document manifest. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits. Analysis artifacts always use repository-default retention.
+- `intermediate-retention-days` controls retention of the SPA build output and optional persisted-document manifest. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits. Analysis artifacts always use repository-default retention.
