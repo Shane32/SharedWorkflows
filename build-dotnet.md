@@ -37,7 +37,7 @@ The **Build .NET Application** workflow includes the following features:
 | `nuget_accounts`       | Comma-separated list of GitHub accounts for NuGet sources | No           | Repository owner    | Skipped if tokens not provided |
 | `dotnet_configuration` | .NET build configuration (e.g., `Release`, `Debug`)       | No           | `Release`           |              |
 | `artifact_name`        | Name of the artifact to upload                            | No           | `.net-app`          |              |
-| `retention-days` | Days to retain the uploaded build artifact | No | `0` | Uses repository retention when omitted or `0`. See [artifact retention](README.md#artifact-retention). |
+| `intermediate-retention-days` | Days to retain the uploaded build artifact | No | `0` | Uses repository retention when omitted or `0`. See [artifact retention](README.md#artifact-retention). |
 | `environment_name`     | Environment name for deployment                           | No           | None                |              |
 | `pack`                 | If true, builds a library into NuGet package(s)           | No           | `false`             |              |
 
@@ -99,7 +99,7 @@ jobs:
       global_json_folder: 'src'
       dotnet_configuration: 'Debug'
       artifact_name: 'my-custom-app'
-      retention-days: 3
+      intermediate-retention-days: 3
       environment_name: 'Development'
       nuget_accounts: 'Shane32'
     secrets:

@@ -15,7 +15,7 @@ See each workflow's respective readme for more details:
 
 ## Artifact retention
 
-The `build-check`, `build-spa`, `publish-app`, and `publish-app-msbuild` workflows accept an optional numeric `intermediate-retention-days` input. The single-artifact workflows `build-dotnet` and `publish-nuget` expose the same setting as `retention-days`. For example, keep the intermediate files from a release build for three days:
+The `build-check`, `build-dotnet`, `build-spa`, `publish-app`, `publish-app-msbuild`, and `publish-nuget` workflows accept an optional numeric `intermediate-retention-days` input. For example, keep the intermediate files from a release build for three days:
 
 ```yaml
 jobs:

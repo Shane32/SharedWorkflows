@@ -177,7 +177,7 @@ jobs:
     if: inputs.dotnet_folder
     uses: $/.github/workflows/build-dotnet.yml
     with:
-      retention-days: ${{ inputs.intermediate-retention-days }}
+      intermediate-retention-days: ${{ inputs.intermediate-retention-days }}
       dotnet_folder: ${{ inputs.dotnet_folder }}
       global_json_folder: ${{ inputs.global_json_folder }}
       nuget_accounts: ${{ inputs.nuget_accounts }}

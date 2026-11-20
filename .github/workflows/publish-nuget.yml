@@ -3,8 +3,8 @@ name: Publish NuGet Package
 on:
   workflow_call:
     inputs:
-      retention-days:
-        description: 'Artifact retention in days; 0 uses the repository default.'
+      intermediate-retention-days:
+        description: 'Intermediate artifact retention in days; 0 uses the repository default.'
         required: false
         type: number
         default: 0
@@ -56,7 +56,7 @@ jobs:
     name: Build NuGet Package
     uses: $/.github/workflows/build-dotnet.yml
     with:
-      retention-days: ${{ inputs.retention-days }}
+      intermediate-retention-days: ${{ inputs.intermediate-retention-days }}
       dotnet_folder: ${{ inputs.dotnet_folder }}
       global_json_folder: ${{ inputs.global_json_folder }}
       nuget_accounts: ${{ inputs.nuget_accounts }}
