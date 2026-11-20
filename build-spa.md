@@ -42,7 +42,7 @@ The **Build SPA** workflow includes the following features:
 | `npm_build_script`            | NPM script used to build the SPA application                      | No           | `build`               |              |
 | `npm_dist_folder`             | Path to the SPA distribution folder                               | No           | `dist`                |              |
 | `artifact_name`               | Name of the artifact to upload                                    | No           | `.spa-app`            |              |
-| `retention-days`              | Days to retain build, persisted-document, and analysis artifacts  | No           | `0`                   | Uses repository retention when omitted or `0`; see [artifact retention](README.md#artifact-retention) |
+| `intermediate-retention-days` | Days to retain SPA and persisted-document intermediates | No | `0` | Uses repository retention when omitted or `0`. Analysis uploads keep repository retention. See [artifact retention](README.md#artifact-retention). |
 | `persisted_documents_file`    | Path to the persisted documents file                              | No           | None                  |              |
 | `persisted_documents_artifact`| Name of the persisted documents artifact                          | No           | `persisted-documents` |              |
 | `environment_name`            | Environment name for deployment                                   | No           | None                  |              |
@@ -99,7 +99,7 @@ jobs:
       npm_build_script: 'build:prod'
       npm_dist_folder: 'build'
       artifact_name: 'spa-production-build'
-      retention-days: 7
+      intermediate-retention-days: 3
       environment_name: 'Development'
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

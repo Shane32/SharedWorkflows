@@ -38,7 +38,7 @@ The **Publish Application with MSDeploy** workflow includes the following featur
 | **Input Name**         | **Description**                                                                     | **Required** | **Default Value**    |
 |------------------------|-------------------------------------------------------------------------------------|--------------|----------------------|
 | `environment_name`     | Specifies the GitHub environment to use while building and for MSDeploy authentication | Yes       | None                 |
-| `retention-days`       | Days to retain Actions artifacts from the build workflows; see [artifact retention](README.md#artifact-retention) | No | `0` (repository default) |
+| `intermediate-retention-days` | Days to retain intermediate Actions artifacts from the build workflows; see [artifact retention](README.md#artifact-retention) | No | `0` (repository default) |
 
 ### .NET Build Inputs
 
@@ -125,7 +125,7 @@ jobs:
       contents: write
     with:
       dotnet_folder: '.'
-      retention-days: 7
+      intermediate-retention-days: 3
       environment_name: Development
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}

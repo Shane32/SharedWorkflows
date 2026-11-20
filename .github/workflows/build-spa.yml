@@ -3,8 +3,8 @@ name: Build SPA Application
 on:
   workflow_call:
     inputs:
-      retention-days:
-        description: 'Artifact retention in days; 0 uses the repository default.'
+      intermediate-retention-days:
+        description: 'Intermediate artifact retention in days; 0 uses the repository default.'
         required: false
         type: number
         default: 0
@@ -132,7 +132,7 @@ jobs:
       - name: Upload SPA build artifact
         uses: actions/upload-artifact@v6
         with:
-          retention-days: ${{ inputs.retention-days }}
+          retention-days: ${{ inputs.intermediate-retention-days }}
           name: ${{ inputs.artifact_name }}
           path: ${{ inputs.spa_folder }}/${{ inputs.npm_dist_folder }}
 
@@ -140,7 +140,7 @@ jobs:
         if: inputs.persisted_documents_file
         uses: actions/upload-artifact@v6
         with:
-          retention-days: ${{ inputs.retention-days }}
+          retention-days: ${{ inputs.intermediate-retention-days }}
           name: ${{ inputs.persisted_documents_artifact }}
           path: ${{ inputs.persisted_documents_file }}
           if-no-files-found: error
@@ -154,6 +154,5 @@ jobs:
         if: inputs.analysis_files
         uses: actions/upload-artifact@v6
         with:
-          retention-days: ${{ inputs.retention-days }}
           name: ${{ inputs.analysis_artifact }}
           path: ${{ inputs.analysis_files }}

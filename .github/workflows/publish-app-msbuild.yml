@@ -3,8 +3,8 @@ name: Publish Application with MSDeploy
 on:
   workflow_call:
     inputs:
-      retention-days:
-        description: 'Artifact retention in days; 0 uses the repository default.'
+      intermediate-retention-days:
+        description: 'Intermediate artifact retention in days; 0 uses the repository default.'
         required: false
         type: number
         default: 0
@@ -141,7 +141,7 @@ jobs:
     if: inputs.dotnet_folder
     uses: $/.github/workflows/build-dotnet.yml
     with:
-      retention-days: ${{ inputs.retention-days }}
+      retention-days: ${{ inputs.intermediate-retention-days }}
       dotnet_folder: ${{ inputs.dotnet_folder }}
       global_json_folder: ${{ inputs.global_json_folder }}
       nuget_accounts: ${{ inputs.nuget_accounts }}
@@ -156,7 +156,7 @@ jobs:
     if: inputs.spa_folder
     uses: $/.github/workflows/build-spa.yml
     with:
-      retention-days: ${{ inputs.retention-days }}
+      intermediate-retention-days: ${{ inputs.intermediate-retention-days }}
       spa_folder: ${{ inputs.spa_folder }}
       spa_version_env: ${{ inputs.spa_version_env }}
       npm_build_script: ${{ inputs.npm_build_script }}

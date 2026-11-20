@@ -37,7 +37,7 @@ The **Publish Application** workflow includes the following features:
 | **Input Name**         | **Description**                                                                     | **Required** | **Default Value**    |
 |------------------------|-------------------------------------------------------------------------------------|--------------|----------------------|
 | `environment_name`     | Specifies the GitHub environment to use while building and for Azure authentication | Yes          | None                 |
-| `retention-days`       | Days to retain Actions artifacts from the build workflows; see [artifact retention](README.md#artifact-retention) | No | `0` (repository default) |
+| `intermediate-retention-days` | Days to retain intermediate Actions artifacts from the build workflows; see [artifact retention](README.md#artifact-retention) | No | `0` (repository default) |
 
 ### .NET Build Inputs
 
@@ -129,7 +129,7 @@ jobs:
       id-token: write
     with:
       dotnet_folder: '.'
-      retention-days: 7
+      intermediate-retention-days: 3
       environment_name: Development
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
