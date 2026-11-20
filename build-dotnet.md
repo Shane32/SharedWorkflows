@@ -30,15 +30,16 @@ The **Build .NET Application** workflow includes the following features:
 
 ### Workflow Inputs
 
-| **Input Name**          | **Description**                                          | **Required** | **Default Value**   | **Comments** |
-|------------------------|-----------------------------------------------------------|--------------|---------------------|--------------|
-| `dotnet_folder`        | Path to the .NET project folder                           | Yes          | None                |              |
-| `global_json_folder`   | Path to the folder containing `global.json`               | No           | `.`                 | Used for SDK version |
-| `nuget_accounts`       | Comma-separated list of GitHub accounts for NuGet sources | No           | Repository owner    | Skipped if tokens not provided |
-| `dotnet_configuration` | .NET build configuration (e.g., `Release`, `Debug`)       | No           | `Release`           |              |
-| `artifact_name`        | Name of the artifact to upload                            | No           | `.net-app`          |              |
-| `environment_name`     | Environment name for deployment                           | No           | None                |              |
-| `pack`                 | If true, builds a library into NuGet package(s)           | No           | `false`             |              |
+| **Input Name**                | **Description**                                           | **Required** | **Default Value** | **Comments**                   |
+|-------------------------------|-----------------------------------------------------------|--------------|-------------------|--------------------------------|
+| `dotnet_folder`               | Path to the .NET project folder                           | Yes          | None              |                                |
+| `global_json_folder`          | Path to the folder containing `global.json`               | No           | `.`               | Used for SDK version           |
+| `nuget_accounts`              | Comma-separated list of GitHub accounts for NuGet sources | No           | Repository owner  | Skipped if tokens not provided |
+| `dotnet_configuration`        | .NET build configuration (e.g., `Release`, `Debug`)       | No           | `Release`         |                                |
+| `artifact_name`               | Name of the artifact to upload                            | No           | `.net-app`        |                                |
+| `intermediate-retention-days` | Days to retain build output                               | No           | (repo default)    |                                |
+| `environment_name`            | Environment name for deployment                           | No           | None              |                                |
+| `pack`                        | If true, builds a library into NuGet package(s)           | No           | `false`           |                                |
 
 ### Environment Variables
 
@@ -72,7 +73,7 @@ on:
 
 jobs:
   build:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@v3
     with:
       dotnet_folder: 'MyAppServer'
     secrets:
@@ -92,7 +93,7 @@ on:
 
 jobs:
   build:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@v3
     with:
       dotnet_folder: 'src/MyApp'
       global_json_folder: 'src'
@@ -117,7 +118,7 @@ on:
 
 jobs:
   build:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@v3
     with:
       dotnet_folder: '.'
       pack: true
@@ -168,3 +169,4 @@ The assembly version continues to follow the original pattern:
 - The workflow runs on Ubuntu latest
 - Build artifacts are automatically uploaded and available for subsequent workflow steps or manual download
 - Private NuGet sources are only configured if both username and token secrets are provided
+- `intermediate-retention-days` controls retention of the uploaded build output, named `.net-app` by default, including packed NuGet files when `pack` is enabled. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits.

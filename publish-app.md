@@ -34,9 +34,10 @@ The **Publish Application** workflow includes the following features:
 
 ### Common Inputs
 
-| **Input Name**         | **Description**                                                                     | **Required** | **Default Value**    |
-|------------------------|-------------------------------------------------------------------------------------|--------------|----------------------|
-| `environment_name`     | Specifies the GitHub environment to use while building and for Azure authentication | Yes          | None                 |
+| **Input Name**                | **Description**                                                                     | **Required** | **Default Value** | **Comments**                                 |
+|-------------------------------|-------------------------------------------------------------------------------------|--------------|-------------------|----------------------------------------------|
+| `environment_name`            | Specifies the GitHub environment to use while building and for Azure authentication | Yes          | None              |                                              |
+| `intermediate-retention-days` | Days to retain intermediate build artifacts                                         | No           | (repo default)    | Analysis artifacts always use repo defaults. |
 
 ### .NET Build Inputs
 
@@ -122,7 +123,7 @@ concurrency:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v3
     permissions:
       contents: write
       id-token: write
@@ -152,7 +153,7 @@ concurrency:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v3
     permissions:
       contents: write
       id-token: write
@@ -181,7 +182,7 @@ on:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app.yml@v3
     permissions:
       contents: write
       id-token: write
@@ -205,6 +206,7 @@ The above example assumes that the necessary Azure configuration values are stor
 - `global.json` is required
 - Cannot override .NET SDK with another version or install multiple SDKs
 - `permissions: contents: write` is necessary to upload the compiled application as a release asset
+- `intermediate-retention-days` is forwarded to the .NET and SPA build workflows to control retention of backend files, frontend files, and the optional persisted-document manifest. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits. Analysis artifacts keep repository-default retention, and GitHub Release attachments are unaffected.
 
 > [!WARNING]
 > While deploying the .NET application, this will delete all existing files in the destination folder before deploying the updated application code. This will permanently delete any local databases (e.g., SQLite `.db` files) or other data files stored on the server.

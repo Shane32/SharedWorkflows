@@ -28,10 +28,11 @@ The `Build Check` workflow includes:
 
 ### Generic Options
 
-| **Input Name**          | **Description**                           | **Required** | **Default Value**       | **Comments**                               |
-|-------------------------|-------------------------------------------|--------------|-------------------------|--------------------------------------------|
-| `build`                 | Enable or disable build checks            | No           | `true`                  |                                            |
-| `format`                | Enable or disable formatting checks       | No           | Automatic               | By default only runs for pull requests     |
+| **Input Name**                | **Description**                     | **Required** | **Default Value** | **Comments**                                              |
+|-------------------------------|-------------------------------------|--------------|-------------------|-----------------------------------------------------------|
+| `build`                       | Enable or disable build checks      | No           | `true`            |                                                           |
+| `format`                      | Enable or disable formatting checks | No           | Automatic         | By default only runs for pull requests                    |
+| `intermediate-retention-days` | Days to retain raw test results     | No           | (repo default)    | Coverage and analysis artifacts always use repo defaults. |
 
 ### .NET Options
 
@@ -161,3 +162,4 @@ jobs:
 - The necessary secrets should already be configured as organization secrets.
 - `global.json` is required for formatting checks; for build/test, `dotnet_version` may be specified instead
 - To use custom run settings (e.g. for additional coverage configuration), set `RunSettingsFilePath` in the `.csproj` file; for example: `<RunSettingsFilePath>$(MSBuildThisFileDirectory)test.runsettings</RunSettingsFilePath>`
+- `intermediate-retention-days` controls retention of raw `TestResults`, which feed the coverage job and can also be downloaded for diagnosis. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits. Generated coverage reports and analysis artifacts always use repository-default retention.

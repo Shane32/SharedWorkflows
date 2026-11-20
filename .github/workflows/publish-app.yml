@@ -3,6 +3,11 @@ name: Publish Application
 on:
   workflow_call:
     inputs:
+      intermediate-retention-days:
+        description: 'Intermediate artifact retention in days; 0 uses the repository default.'
+        required: false
+        type: number
+        default: 0
       # .NET Build Inputs
       dotnet_folder:
         description: 'Path to the .NET project folder'
@@ -170,8 +175,9 @@ jobs:
   build_dotnet:
     name: Build .NET Backend
     if: inputs.dotnet_folder
-    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@2.3.0
+    uses: $/.github/workflows/build-dotnet.yml
     with:
+      intermediate-retention-days: ${{ inputs.intermediate-retention-days }}
       dotnet_folder: ${{ inputs.dotnet_folder }}
       global_json_folder: ${{ inputs.global_json_folder }}
       nuget_accounts: ${{ inputs.nuget_accounts }}
@@ -184,8 +190,9 @@ jobs:
   build_spa:
     name: Build SPA
     if: inputs.spa_folder
-    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@2.3.0
+    uses: $/.github/workflows/build-spa.yml
     with:
+      intermediate-retention-days: ${{ inputs.intermediate-retention-days }}
       spa_folder: ${{ inputs.spa_folder }}
       spa_version_env: ${{ inputs.spa_version_env }}
       npm_build_script: ${{ inputs.npm_build_script }}

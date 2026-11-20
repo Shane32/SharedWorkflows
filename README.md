@@ -25,4 +25,5 @@ Before using the deployment workflows, you'll need to configure the necessary Az
 2. Issue release, bumping major version number for breaking changes
 3. Adjust/create 'v#' tag to point to new #.x.x release
 4. If updating the `add-nuget-sources` or `add-npm-sources` workflows, update references to them within the other workflows to use the new version number
-5. If updating the `build-spa`, `build-dotnet`, `deploy-azurewebapp` or `deploy-azurestorage` workflows, update references to them in the `publish-app` workflow to use the new version number
+5. If updating the `deploy-azurewebapp` or `deploy-azurestorage` workflows, update references to them in the `publish-app` workflow to use the new version number
+6. Keep the `$/` self repository builder references in `publish-app`, `publish-app-msbuild`, and `publish-nuget` so each publishing workflow uses builders from the same SharedWorkflows commit, including when called from another repository. See [reusable workflow reference syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_iduses).

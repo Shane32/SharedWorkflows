@@ -3,6 +3,11 @@ name: Publish NuGet Package
 on:
   workflow_call:
     inputs:
+      intermediate-retention-days:
+        description: 'Intermediate artifact retention in days; 0 uses the repository default.'
+        required: false
+        type: number
+        default: 0
       dotnet_folder:
         description: 'Path to the .NET project folder'
         required: true
@@ -49,8 +54,9 @@ on:
 jobs:
   build:
     name: Build NuGet Package
-    uses: Shane32/SharedWorkflows/.github/workflows/build-dotnet.yml@2.3.0
+    uses: $/.github/workflows/build-dotnet.yml
     with:
+      intermediate-retention-days: ${{ inputs.intermediate-retention-days }}
       dotnet_folder: ${{ inputs.dotnet_folder }}
       global_json_folder: ${{ inputs.global_json_folder }}
       nuget_accounts: ${{ inputs.nuget_accounts }}

@@ -35,20 +35,21 @@ The **Build SPA** workflow includes the following features:
 
 ### Workflow Inputs
 
-| **Input Name**                 | **Description**                                                  | **Required** | **Default Value**     | **Comments** |
-|-------------------------------|-------------------------------------------------------------------|--------------|-----------------------|--------------|
-| `spa_folder`                  | Path to the SPA project folder                                    | Yes          | None                  |              |
-| `spa_version_env`             | Environment variable name to store SPA version                    | No           | `VITE_VERSION`        | e.g. `REACT_APP_VERSION` for React |
-| `npm_build_script`            | NPM script used to build the SPA application                      | No           | `build`               |              |
-| `npm_dist_folder`             | Path to the SPA distribution folder                               | No           | `dist`                |              |
-| `artifact_name`               | Name of the artifact to upload                                    | No           | `.spa-app`            |              |
-| `persisted_documents_file`    | Path to the persisted documents file                              | No           | None                  |              |
-| `persisted_documents_artifact`| Name of the persisted documents artifact                          | No           | `persisted-documents` |              |
-| `environment_name`            | Environment name for deployment                                   | No           | None                  |              |
-| `npm_analyze_script`          | NPM analyze script to run after build                             | No           | None                  |              |
-| `analysis_files`              | Full path to files to upload as analysis artifacts (glob pattern) | No           | None                  |              |
-| `analysis_artifact`           | Name of the analysis artifact to upload                           | No           | `analysis`            |              |
-| `npm_accounts`                | Comma-separated list of GitHub accounts to add as NPM sources     | No           | Repository owner      | Skipped if tokens are not provided |
+| **Input Name**                 | **Description**                                                   | **Required** | **Default Value**     | **Comments**                                 |
+|--------------------------------|-------------------------------------------------------------------|--------------|-----------------------|----------------------------------------------|
+| `spa_folder`                   | Path to the SPA project folder                                    | Yes          | None                  |                                              |
+| `spa_version_env`              | Environment variable name to store SPA version                    | No           | `VITE_VERSION`        | e.g. `REACT_APP_VERSION` for React           |
+| `npm_build_script`             | NPM script used to build the SPA application                      | No           | `build`               |                                              |
+| `npm_dist_folder`              | Path to the SPA distribution folder                               | No           | `dist`                |                                              |
+| `artifact_name`                | Name of the artifact to upload                                    | No           | `.spa-app`            |                                              |
+| `intermediate-retention-days`  | Days to retain build output and persisted documents               | No           | (repo default)        | Analysis artifacts always use repo defaults. |
+| `persisted_documents_file`     | Path to the persisted documents file                              | No           | None                  |                                              |
+| `persisted_documents_artifact` | Name of the persisted documents artifact                          | No           | `persisted-documents` |                                              |
+| `environment_name`             | Environment name for deployment                                   | No           | None                  |                                              |
+| `npm_analyze_script`           | NPM analyze script to run after build                             | No           | None                  |                                              |
+| `analysis_files`               | Full path to files to upload as analysis artifacts (glob pattern) | No           | None                  |                                              |
+| `analysis_artifact`            | Name of the analysis artifact to upload                           | No           | `analysis`            |                                              |
+| `npm_accounts`                 | Comma-separated list of GitHub accounts to add as NPM sources     | No           | Repository owner      | Skipped if tokens are not provided           |
 
 ### Secrets
 
@@ -74,7 +75,7 @@ on:
 
 jobs:
   build-spa:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@v3
     with:
       spa_folder: '.'
 ```
@@ -91,7 +92,7 @@ on:
 
 jobs:
   build-spa:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@v3
     with:
       spa_folder: 'ReactApp'
       spa_version_env: 'REACT_APP_VERSION'
@@ -115,7 +116,7 @@ on:
 
 jobs:
   build-spa:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@v3
     with:
       spa_folder: 'ClientApp'
       persisted_documents_file: 'ClientApp/src/gql/persisted-documents.json'
@@ -134,7 +135,7 @@ on:
 
 jobs:
   build-spa:
-    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@v1
+    uses: Shane32/SharedWorkflows/.github/workflows/build-spa.yml@v3
     with:
       spa_folder: 'ClientApp'
       npm_analyze_script: 'analyze'
@@ -151,3 +152,4 @@ jobs:
 - When using `persisted_documents_file`, the workflow will fail if the specified file is not found
 - The workflow runs in the specified environment context so custom environment variables can be added within GitHub's environment configuration
 - Analysis artifacts are only uploaded if both `npm_analyze_script` and `analysis_files` are provided
+- `intermediate-retention-days` controls retention of the SPA build output and optional persisted-document manifest. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits. Analysis artifacts always use repository-default retention.

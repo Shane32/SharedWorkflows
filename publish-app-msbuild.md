@@ -35,9 +35,10 @@ The **Publish Application with MSDeploy** workflow includes the following featur
 
 ### Common Inputs
 
-| **Input Name**         | **Description**                                                                     | **Required** | **Default Value**    |
-|------------------------|-------------------------------------------------------------------------------------|--------------|----------------------|
-| `environment_name`     | Specifies the GitHub environment to use while building and for MSDeploy authentication | Yes       | None                 |
+| **Input Name**                | **Description**                                                                        | **Required** | **Default Value** | **Comments**                                 |
+|-------------------------------|----------------------------------------------------------------------------------------|--------------|-------------------|----------------------------------------------|
+| `environment_name`            | Specifies the GitHub environment to use while building and for MSDeploy authentication | Yes          | None              |                                              |
+| `intermediate-retention-days` | Days to retain intermediate build artifacts                                            | No           | (repo default)    | Analysis artifacts always use repo defaults. |
 
 ### .NET Build Inputs
 
@@ -119,7 +120,7 @@ concurrency:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app-msbuild.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app-msbuild.yml@v3
     permissions:
       contents: write
     with:
@@ -149,7 +150,7 @@ concurrency:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app-msbuild.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app-msbuild.yml@v3
     permissions:
       contents: write
     with:
@@ -176,7 +177,7 @@ on:
 
 jobs:
   publish-application:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app-msbuild.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-app-msbuild.yml@v3
     permissions:
       contents: write
     with:
@@ -202,6 +203,7 @@ The above example assumes that the necessary MSDeploy configuration values are s
 - Cannot override .NET SDK with another version or install multiple SDKs
 - `permissions: contents: write` is necessary to upload the compiled application as a release asset
 - The `msdeploy_allow_untrusted` option should only be set to `true` for development/staging environments with self-signed certificates
+- `intermediate-retention-days` is forwarded to the .NET and SPA build workflows to control retention of backend files, frontend files, and the optional persisted-document manifest used for IIS deployment. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits. Analysis artifacts keep repository-default retention, and GitHub Release attachments are unaffected.
 
 ## MSDeploy Server URL Format
 

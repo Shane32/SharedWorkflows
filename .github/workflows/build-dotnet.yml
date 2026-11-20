@@ -3,6 +3,11 @@ name: Build .NET Application
 on:
   workflow_call:
     inputs:
+      intermediate-retention-days:
+        description: 'Intermediate artifact retention in days; 0 uses the repository default.'
+        required: false
+        type: number
+        default: 0
       dotnet_folder:
         description: 'Path to the .NET project folder'
         required: true
@@ -134,5 +139,6 @@ jobs:
       - name: Upload .NET build artifact
         uses: actions/upload-artifact@v6
         with:
+          retention-days: ${{ inputs.intermediate-retention-days }}
           name: ${{ inputs.artifact_name }}
           path: ${{ inputs.dotnet_folder }}/build_output

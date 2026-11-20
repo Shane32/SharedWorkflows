@@ -29,14 +29,15 @@ The **Publish NuGet Package** workflow includes the following features:
 
 ### Workflow Inputs
 
-| **Input Name**          | **Description**                                          | **Required** | **Default Value**   | **Comments** |
-|------------------------|-----------------------------------------------------------|--------------|---------------------|--------------|
-| `dotnet_folder`        | Path to the .NET project folder                           | Yes          | None                |              |
-| `global_json_folder`   | Path to the folder containing `global.json`               | No           | `.`                 | Used for SDK version |
-| `nuget_accounts`       | Comma-separated list of GitHub accounts for NuGet sources | No           | `default`           | Used during build for private packages |
-| `dotnet_configuration` | .NET build configuration (e.g., `Release`, `Debug`)       | No           | `Release`           |              |
-| `environment_name`     | Environment name for deployment                           | No           | None                |              |
-| `publish_to_nuget`     | Force publishing to NuGet.org instead of GitHub Packages  | No           | `false`             | Requires `NUGET_AUTH_TOKEN` |
+| **Input Name**                | **Description**                                           | **Required** | **Default Value** | **Comments**                           |
+|-------------------------------|-----------------------------------------------------------|--------------|-------------------|----------------------------------------|
+| `dotnet_folder`               | Path to the .NET project folder                           | Yes          | None              |                                        |
+| `global_json_folder`          | Path to the folder containing `global.json`               | No           | `.`               | Used for SDK version                   |
+| `nuget_accounts`              | Comma-separated list of GitHub accounts for NuGet sources | No           | `default`         | Used during build for private packages |
+| `dotnet_configuration`        | .NET build configuration (e.g., `Release`, `Debug`)       | No           | `Release`         |                                        |
+| `environment_name`            | Environment name for deployment                           | No           | None              |                                        |
+| `intermediate-retention-days` | Days to retain intermediate NuGet build output            | No           | (repo default)    |                                        |
+| `publish_to_nuget`            | Force publishing to NuGet.org instead of GitHub Packages  | No           | `false`           | Requires `NUGET_AUTH_TOKEN`            |
 
 ### Environment Variables
 
@@ -103,7 +104,7 @@ on:
 
 jobs:
   publish:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-nuget.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-nuget.yml@v3
     permissions:
       contents: write
       packages: write
@@ -131,7 +132,7 @@ on:
 
 jobs:
   publish:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-nuget.yml@v2
+    uses: Shane32/SharedWorkflows/.github/workflows/publish-nuget.yml@v3
     permissions:
       contents: write
       packages: write
@@ -245,3 +246,4 @@ For individual library projects that should be packaged, set `IsPackable` to `tr
 - For GitHub Packages, the repository owner is automatically extracted from the GitHub context
 - `permissions: contents: write` is necessary to upload NuGet packages as release assets
 - `permissions: packages: write` is necessary to upload NuGet packages to GitHub Packages
+- `intermediate-retention-days` controls retention of the `.net-app` Actions artifact containing the packed NuGet files passed to the publishing job. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits. Published NuGet packages and GitHub Release attachments are unaffected.
