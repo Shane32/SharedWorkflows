@@ -54,7 +54,7 @@ on:
 jobs:
   build:
     name: Build NuGet Package
-    uses: ./.github/workflows/build-dotnet.yml
+    uses: $/.github/workflows/build-dotnet.yml
     with:
       retention-days: ${{ inputs.retention-days }}
       dotnet_folder: ${{ inputs.dotnet_folder }}
