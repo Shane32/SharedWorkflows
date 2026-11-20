@@ -173,5 +173,3 @@ The assembly version continues to follow the original pattern:
 ### Artifact retention
 
 `intermediate-retention-days` controls retention of the uploaded build output, named `.net-app` by default, including packed NuGet files when `pack` is enabled. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits.
-
-The setting applies only to newly uploaded Actions artifacts. Existing artifact expiration dates are unchanged.
