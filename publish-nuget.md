@@ -249,6 +249,4 @@ For individual library projects that should be packaged, set `IsPackable` to `tr
 
 ### Artifact retention
 
-`intermediate-retention-days` controls retention of the `.net-app` Actions artifact containing the packed NuGet files passed to the publishing job. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits.
-
-Published NuGet packages and GitHub Release attachments are unaffected.
+`intermediate-retention-days` controls retention of the `.net-app` Actions artifact containing the packed NuGet files passed to the publishing job. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits. Published NuGet packages and GitHub Release attachments are unaffected.

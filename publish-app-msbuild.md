@@ -206,9 +206,7 @@ The above example assumes that the necessary MSDeploy configuration values are s
 
 ### Artifact retention
 
-`intermediate-retention-days` is forwarded to the .NET and SPA build workflows to control retention of backend files, frontend files, and the optional persisted-document manifest used for IIS deployment. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits.
-
-Analysis artifacts keep repository-default retention, and GitHub Release attachments are unaffected.
+`intermediate-retention-days` is forwarded to the .NET and SPA build workflows to control retention of backend files, frontend files, and the optional persisted-document manifest used for IIS deployment. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits. Analysis artifacts keep repository-default retention, and GitHub Release attachments are unaffected.
 
 ## MSDeploy Server URL Format
 
