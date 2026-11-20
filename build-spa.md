@@ -99,7 +99,6 @@ jobs:
       npm_build_script: 'build:prod'
       npm_dist_folder: 'build'
       artifact_name: 'spa-production-build'
-      intermediate-retention-days: 3
       environment_name: 'Development'
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -153,3 +152,9 @@ jobs:
 - When using `persisted_documents_file`, the workflow will fail if the specified file is not found
 - The workflow runs in the specified environment context so custom environment variables can be added within GitHub's environment configuration
 - Analysis artifacts are only uploaded if both `npm_analyze_script` and `analysis_files` are provided
+
+### Artifact retention
+
+`intermediate-retention-days` controls retention of the SPA build output and optional persisted-document manifest. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits.
+
+Analysis artifacts always use repository-default retention. The setting applies only to newly uploaded intermediate artifacts; existing artifact expiration dates are unchanged.

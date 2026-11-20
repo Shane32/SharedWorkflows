@@ -99,7 +99,6 @@ jobs:
       global_json_folder: 'src'
       dotnet_configuration: 'Debug'
       artifact_name: 'my-custom-app'
-      intermediate-retention-days: 3
       environment_name: 'Development'
       nuget_accounts: 'Shane32'
     secrets:
@@ -170,3 +169,9 @@ The assembly version continues to follow the original pattern:
 - The workflow runs on Ubuntu latest
 - Build artifacts are automatically uploaded and available for subsequent workflow steps or manual download
 - Private NuGet sources are only configured if both username and token secrets are provided
+
+### Artifact retention
+
+`intermediate-retention-days` controls retention of the uploaded build output, named `.net-app` by default, including packed NuGet files when `pack` is enabled. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits.
+
+The setting applies only to newly uploaded Actions artifacts. Existing artifact expiration dates are unchanged.

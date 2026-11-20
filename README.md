@@ -13,30 +13,6 @@ See each workflow's respective readme for more details:
 - [Combination Build and Deploy Application workflow for both .NET and SPA code](publish-app.md)
 - [Publish Application with MSDeploy workflow for building and deploying .NET/SPA to IIS](publish-app-msbuild.md)
 
-## Artifact retention
-
-The `build-check`, `build-dotnet`, `build-spa`, `publish-app`, `publish-app-msbuild`, and `publish-nuget` workflows accept an optional numeric `intermediate-retention-days` input. For example, keep the intermediate files from a release build for three days:
-
-```yaml
-jobs:
-  publish:
-    uses: Shane32/SharedWorkflows/.github/workflows/publish-app-msbuild.yml@v3
-    with:
-      dotnet_folder: 'MyAppServer'
-      environment_name: Production
-      intermediate-retention-days: 3
-    secrets:
-      msdeploy_password: ${{ secrets.MSDEPLOY_PASSWORD }}
-```
-
-Omitting either input or setting it to `0` uses the calling repository's default retention. A positive value controls intermediate Actions artifacts: the `.net-app` build output (or packed NuGet files), `.spa-app` frontend output, `persisted-documents` manifest, and raw `TestResults`, where applicable. The repository and organization retention limits still apply.
-
-The `Code Coverage Artifacts`, `analysis`, and `Analysis Artifacts` uploads keep the repository's default retention. Raw `TestResults` feed the coverage job and may also be useful for diagnosis; their retention follows the intermediate setting.
-
-Publishing workflows forward this setting to their build workflows. It applies to newly uploaded Actions artifacts; existing artifacts keep their expiration dates. It does not expire files attached to GitHub Releases or packages published to a package registry. See [GitHub's artifact retention documentation](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/remove-workflow-artifacts).
-
-The `@v3` examples require the tag to be updated to a release containing this input. Before that release, pin a commit containing the change. Older pinned versions, such as `2.3.0`, do not accept these retention inputs.
-
 ## Azure Permissions Setup
 
 Before using the deployment workflows, you'll need to configure the necessary Azure permissions and GitHub environments:

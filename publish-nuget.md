@@ -110,7 +110,6 @@ jobs:
       packages: write
     with:
       dotnet_folder: '.'
-      intermediate-retention-days: 3
     secrets:
       NUGET_ORG_USER: ${{ secrets.NUGET_ORG_USER }}
       NUGET_ORG_TOKEN: ${{ secrets.NUGET_ORG_TOKEN }}
@@ -247,3 +246,9 @@ For individual library projects that should be packaged, set `IsPackable` to `tr
 - For GitHub Packages, the repository owner is automatically extracted from the GitHub context
 - `permissions: contents: write` is necessary to upload NuGet packages as release assets
 - `permissions: packages: write` is necessary to upload NuGet packages to GitHub Packages
+
+### Artifact retention
+
+`intermediate-retention-days` controls retention of the `.net-app` Actions artifact containing the packed NuGet files passed to the publishing job. Omitting it or setting it to `0` uses the calling repository's default retention; a positive value sets the period in days, within repository and organization limits.
+
+Published NuGet packages and GitHub Release attachments are unaffected. The setting applies only to new intermediate Actions artifact uploads; existing artifact expiration dates are unchanged.
