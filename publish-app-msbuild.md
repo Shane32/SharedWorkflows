@@ -35,10 +35,10 @@ The **Publish Application with MSDeploy** workflow includes the following featur
 
 ### Common Inputs
 
-| **Input Name**         | **Description**                                                                     | **Required** | **Default Value**    |
-|------------------------|-------------------------------------------------------------------------------------|--------------|----------------------|
-| `environment_name`     | Specifies the GitHub environment to use while building and for MSDeploy authentication | Yes       | None                 |
-| `intermediate-retention-days` | Days to retain intermediate Actions artifacts from the build workflows; see [artifact retention](README.md#artifact-retention) | No | `0` (repository default) |
+| **Input Name**                | **Description**                                                                        | **Required** | **Default Value** | **Comments**                                 |
+|-------------------------------|----------------------------------------------------------------------------------------|--------------|-------------------|----------------------------------------------|
+| `environment_name`            | Specifies the GitHub environment to use while building and for MSDeploy authentication | Yes          | None              |                                              |
+| `intermediate-retention-days` | Days to retain intermediate build artifacts                                            | No           | (repo default)    | Analysis artifacts always use repo defaults. |
 
 ### .NET Build Inputs
 

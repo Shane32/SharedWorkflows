@@ -29,15 +29,15 @@ The **Publish NuGet Package** workflow includes the following features:
 
 ### Workflow Inputs
 
-| **Input Name**          | **Description**                                          | **Required** | **Default Value**   | **Comments** |
-|------------------------|-----------------------------------------------------------|--------------|---------------------|--------------|
-| `dotnet_folder`        | Path to the .NET project folder                           | Yes          | None                |              |
-| `global_json_folder`   | Path to the folder containing `global.json`               | No           | `.`                 | Used for SDK version |
-| `nuget_accounts`       | Comma-separated list of GitHub accounts for NuGet sources | No           | `default`           | Used during build for private packages |
-| `dotnet_configuration` | .NET build configuration (e.g., `Release`, `Debug`)       | No           | `Release`           |              |
-| `environment_name`     | Environment name for deployment                           | No           | None                |              |
-| `intermediate-retention-days` | Days to retain the `.net-app` Actions build artifact | No | `0` | Uses repository retention when omitted or `0`. Published packages and release assets are unaffected. See [artifact retention](README.md#artifact-retention). |
-| `publish_to_nuget`     | Force publishing to NuGet.org instead of GitHub Packages  | No           | `false`             | Requires `NUGET_AUTH_TOKEN` |
+| **Input Name**                | **Description**                                           | **Required** | **Default Value** | **Comments**                           |
+|-------------------------------|-----------------------------------------------------------|--------------|-------------------|----------------------------------------|
+| `dotnet_folder`               | Path to the .NET project folder                           | Yes          | None              |                                        |
+| `global_json_folder`          | Path to the folder containing `global.json`               | No           | `.`               | Used for SDK version                   |
+| `nuget_accounts`              | Comma-separated list of GitHub accounts for NuGet sources | No           | `default`         | Used during build for private packages |
+| `dotnet_configuration`        | .NET build configuration (e.g., `Release`, `Debug`)       | No           | `Release`         |                                        |
+| `environment_name`            | Environment name for deployment                           | No           | None              |                                        |
+| `intermediate-retention-days` | Days to retain intermediate NuGet build output            | No           | (repo default)    |                                        |
+| `publish_to_nuget`            | Force publishing to NuGet.org instead of GitHub Packages  | No           | `false`           | Requires `NUGET_AUTH_TOKEN`            |
 
 ### Environment Variables
 

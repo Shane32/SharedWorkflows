@@ -28,11 +28,11 @@ The `Build Check` workflow includes:
 
 ### Generic Options
 
-| **Input Name**          | **Description**                           | **Required** | **Default Value**       | **Comments**                               |
-|-------------------------|-------------------------------------------|--------------|-------------------------|--------------------------------------------|
-| `build`                 | Enable or disable build checks            | No           | `true`                  |                                            |
-| `format`                | Enable or disable formatting checks       | No           | Automatic               | By default only runs for pull requests     |
-| `intermediate-retention-days` | Days to retain raw `TestResults` | No | `0` | Uses repository retention when omitted or `0`. Coverage and analysis uploads keep repository retention. See [artifact retention](README.md#artifact-retention). |
+| **Input Name**                | **Description**                     | **Required** | **Default Value** | **Comments**                                              |
+|-------------------------------|-------------------------------------|--------------|-------------------|-----------------------------------------------------------|
+| `build`                       | Enable or disable build checks      | No           | `true`            |                                                           |
+| `format`                      | Enable or disable formatting checks | No           | Automatic         | By default only runs for pull requests                    |
+| `intermediate-retention-days` | Days to retain raw test results     | No           | (repo default)    | Coverage and analysis artifacts always use repo defaults. |
 
 ### .NET Options
 

@@ -30,16 +30,16 @@ The **Build .NET Application** workflow includes the following features:
 
 ### Workflow Inputs
 
-| **Input Name**          | **Description**                                          | **Required** | **Default Value**   | **Comments** |
-|------------------------|-----------------------------------------------------------|--------------|---------------------|--------------|
-| `dotnet_folder`        | Path to the .NET project folder                           | Yes          | None                |              |
-| `global_json_folder`   | Path to the folder containing `global.json`               | No           | `.`                 | Used for SDK version |
-| `nuget_accounts`       | Comma-separated list of GitHub accounts for NuGet sources | No           | Repository owner    | Skipped if tokens not provided |
-| `dotnet_configuration` | .NET build configuration (e.g., `Release`, `Debug`)       | No           | `Release`           |              |
-| `artifact_name`        | Name of the artifact to upload                            | No           | `.net-app`          |              |
-| `intermediate-retention-days` | Days to retain the uploaded build artifact | No | `0` | Uses repository retention when omitted or `0`. See [artifact retention](README.md#artifact-retention). |
-| `environment_name`     | Environment name for deployment                           | No           | None                |              |
-| `pack`                 | If true, builds a library into NuGet package(s)           | No           | `false`             |              |
+| **Input Name**                | **Description**                                           | **Required** | **Default Value** | **Comments**                   |
+|-------------------------------|-----------------------------------------------------------|--------------|-------------------|--------------------------------|
+| `dotnet_folder`               | Path to the .NET project folder                           | Yes          | None              |                                |
+| `global_json_folder`          | Path to the folder containing `global.json`               | No           | `.`               | Used for SDK version           |
+| `nuget_accounts`              | Comma-separated list of GitHub accounts for NuGet sources | No           | Repository owner  | Skipped if tokens not provided |
+| `dotnet_configuration`        | .NET build configuration (e.g., `Release`, `Debug`)       | No           | `Release`         |                                |
+| `artifact_name`               | Name of the artifact to upload                            | No           | `.net-app`        |                                |
+| `intermediate-retention-days` | Days to retain build output                               | No           | (repo default)    |                                |
+| `environment_name`            | Environment name for deployment                           | No           | None              |                                |
+| `pack`                        | If true, builds a library into NuGet package(s)           | No           | `false`           |                                |
 
 ### Environment Variables
 

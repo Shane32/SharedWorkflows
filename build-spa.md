@@ -35,21 +35,21 @@ The **Build SPA** workflow includes the following features:
 
 ### Workflow Inputs
 
-| **Input Name**                 | **Description**                                                  | **Required** | **Default Value**     | **Comments** |
-|-------------------------------|-------------------------------------------------------------------|--------------|-----------------------|--------------|
-| `spa_folder`                  | Path to the SPA project folder                                    | Yes          | None                  |              |
-| `spa_version_env`             | Environment variable name to store SPA version                    | No           | `VITE_VERSION`        | e.g. `REACT_APP_VERSION` for React |
-| `npm_build_script`            | NPM script used to build the SPA application                      | No           | `build`               |              |
-| `npm_dist_folder`             | Path to the SPA distribution folder                               | No           | `dist`                |              |
-| `artifact_name`               | Name of the artifact to upload                                    | No           | `.spa-app`            |              |
-| `intermediate-retention-days` | Days to retain SPA and persisted-document intermediates | No | `0` | Uses repository retention when omitted or `0`. Analysis uploads keep repository retention. See [artifact retention](README.md#artifact-retention). |
-| `persisted_documents_file`    | Path to the persisted documents file                              | No           | None                  |              |
-| `persisted_documents_artifact`| Name of the persisted documents artifact                          | No           | `persisted-documents` |              |
-| `environment_name`            | Environment name for deployment                                   | No           | None                  |              |
-| `npm_analyze_script`          | NPM analyze script to run after build                             | No           | None                  |              |
-| `analysis_files`              | Full path to files to upload as analysis artifacts (glob pattern) | No           | None                  |              |
-| `analysis_artifact`           | Name of the analysis artifact to upload                           | No           | `analysis`            |              |
-| `npm_accounts`                | Comma-separated list of GitHub accounts to add as NPM sources     | No           | Repository owner      | Skipped if tokens are not provided |
+| **Input Name**                 | **Description**                                                   | **Required** | **Default Value**     | **Comments**                                 |
+|--------------------------------|-------------------------------------------------------------------|--------------|-----------------------|----------------------------------------------|
+| `spa_folder`                   | Path to the SPA project folder                                    | Yes          | None                  |                                              |
+| `spa_version_env`              | Environment variable name to store SPA version                    | No           | `VITE_VERSION`        | e.g. `REACT_APP_VERSION` for React           |
+| `npm_build_script`             | NPM script used to build the SPA application                      | No           | `build`               |                                              |
+| `npm_dist_folder`              | Path to the SPA distribution folder                               | No           | `dist`                |                                              |
+| `artifact_name`                | Name of the artifact to upload                                    | No           | `.spa-app`            |                                              |
+| `intermediate-retention-days`  | Days to retain build output and persisted documents               | No           | (repo default)        | Analysis artifacts always use repo defaults. |
+| `persisted_documents_file`     | Path to the persisted documents file                              | No           | None                  |                                              |
+| `persisted_documents_artifact` | Name of the persisted documents artifact                          | No           | `persisted-documents` |                                              |
+| `environment_name`             | Environment name for deployment                                   | No           | None                  |                                              |
+| `npm_analyze_script`           | NPM analyze script to run after build                             | No           | None                  |                                              |
+| `analysis_files`               | Full path to files to upload as analysis artifacts (glob pattern) | No           | None                  |                                              |
+| `analysis_artifact`            | Name of the analysis artifact to upload                           | No           | `analysis`            |                                              |
+| `npm_accounts`                 | Comma-separated list of GitHub accounts to add as NPM sources     | No           | Repository owner      | Skipped if tokens are not provided           |
 
 ### Secrets
 
